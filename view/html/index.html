@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Task Manager - Login</title>
+  <link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="auth-box">
+      <h1>Team Task Manager</h1>
+      
+      <!-- 登入表單 -->
+      <div id="login-form" class="form-section">
+        <h2>登入</h2>
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button onclick="login()">登入</button>
+        <p class="switch-link">
+          還沒有帳號? <a href="#" onclick="showRegister()">註冊</a>
+        </p>
+      </div>
+
+      <!-- 註冊表單 -->
+      <div id="register-form" class="form-section hidden">
+        <h2>註冊</h2>
+        <input type="text" id="register-username" placeholder="Username" required>
+        <input type="email" id="register-email" placeholder="Email" required>
+        <input type="password" id="register-password" placeholder="Password" required>
+        <button onclick="register()">註冊</button>
+        <p class="switch-link">
+          已有帳號? <a href="#" onclick="showLogin()">登入</a>
+        </p>
+      </div>
+
+      <div id="message" class="message"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://127.0.0.1:8888';
+
+    // 顯示登入表單
+    function showLogin() {
+      document.getElementById('login-form').classList.remove('hidden');
+      document.getElementById('register-form').classList.add('hidden');
+      clearMessage();
+    }
+
+    // 顯示註冊表單
+    function showRegister() {
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('register-form').classList.remove('hidden');
+      clearMessage();
+    }
+
+    // 註冊
+    async function register() {
+      const username = document.getElementById('register-username').value;
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+
+      if (!username || !email || !password) {
+        showMessage('請填寫所有欄位', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showMessage('註冊成功!請登入', 'success');
+          setTimeout(() => showLogin(), 1500);
+        } else {
+          showMessage(data.error || '註冊失敗', 'error');
+        }
+      } catch (error) {
+        showMessage('網路錯誤', 'error');
+      }
+    }
+
+    // 登入
+    async function login() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      if (!email || !password) {
+        showMessage('請填寫所有欄位', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // 儲存 token 和使用者資訊
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          
+          showMessage('登入成功!', 'success');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1000);
+        } else {
+          showMessage(data.error || '登入失敗', 'error');
+        }
+      } catch (error) {
+        showMessage('網路錯誤', 'error');
+      }
+    }
+
+    // 顯示訊息
+    function showMessage(msg, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = msg;
+      messageDiv.className = `message ${type}`;
+      messageDiv.style.display = 'block';
+    }
+
+    // 清除訊息
+    function clearMessage() {
+      document.getElementById('message').style.display = 'none';
+    }
+
+    // 檢查是否已登入
+    if (localStorage.getItem('token')) {
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>

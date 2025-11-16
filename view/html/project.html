@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>專案詳情 - Team Task Manager</title>
+  <link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>Team Task Manager</h1>
+    <div class="nav-right">
+      <button onclick="goBack()" class="btn-secondary">← 返回</button>
+      <button onclick="logout()" class="btn-secondary">登出</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- 專案資訊 -->
+    <div class="project-header">
+      <div>
+        <h2 id="project-name"></h2>
+        <p id="project-description"></p>
+      </div>
+      <button onclick="showAddTaskModal()" class="btn-primary">+ 新增任務</button>
+    </div>
+
+    <!-- 成員列表 -->
+    <div class="section">
+      <h3>團隊成員 <button onclick="showAddMemberModal()" class="btn-small">+ 邀請</button></h3>
+      <div id="members-container" class="members-list"></div>
+    </div>
+
+    <!-- 任務列表 -->
+    <div class="section">
+      <h3>任務列表</h3>
+      <div class="task-filters">
+        <button onclick="filterTasks('all')" class="filter-btn active">全部</button>
+        <button onclick="filterTasks('todo')" class="filter-btn">待處理</button>
+        <button onclick="filterTasks('in_progress')" class="filter-btn">進行中</button>
+        <button onclick="filterTasks('done')" class="filter-btn">已完成</button>
+      </div>
+      <div id="tasks-container" class="tasks-list"></div>
+    </div>
+
+    <!-- 新增任務 Modal -->
+    <div id="add-task-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>新增任務</h3>
+        <input type="text" id="task-title" placeholder="任務標題" required>
+        <textarea id="task-description" placeholder="任務描述 (選填)" rows="3"></textarea>
+        <select id="task-assignee">
+          <option value="">不指派</option>
+        </select>
+        <select id="task-priority">
+          <option value="low">低優先級</option>
+          <option value="medium" selected>中優先級</option>
+          <option value="high">高優先級</option>
+        </select>
+        <input type="date" id="task-due-date">
+        <div class="modal-actions">
+          <button onclick="createTask()" class="btn-primary">建立</button>
+          <button onclick="hideTaskModal()" class="btn-secondary">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 邀請成員 Modal -->
+    <div id="add-member-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>邀請成員</h3>
+        <input type="email" id="member-email" placeholder="成員 Email" required>
+        <select id="member-role">
+          <option value="member">一般成員</option>
+          <option value="admin">管理員</option>
+        </select>
+        <div class="modal-actions">
+          <button onclick="addMember()" class="btn-primary">邀請</button>
+          <button onclick="hideMemberModal()" class="btn-secondary">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://127.0.0.1:8888';
+    let token = localStorage.getItem('token');
+    let user = JSON.parse(localStorage.getItem('user'));
+    let projectId = new URLSearchParams(window.location.search).get('id');
+    let currentFilter = 'all';
+    let projectData = null;
+    let tasksData = [];
+
+    if (!token || !projectId) {
+      window.location.href = 'index.html';
+    }
+
+    // 載入專案資料
+    async function loadProject() {
+      try {
+        const response = await fetch(`${API_URL}/projects/${projectId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.status === 401) {
+          logout();
+          return;
+        }
+
+        projectData = await response.json();
+        displayProject(projectData);
+        displayMembers(projectData.members);
+        displayTasks(projectData.tasks);
+        tasksData = projectData.tasks;
+      } catch (error) {
+        alert('載入專案失敗');
+      }
+    }
+
+    // 顯示專案資訊
+    function displayProject(project) {
+      document.getElementById('project-name').textContent = project.name;
+      document.getElementById('project-description').textContent = project.description || '沒有描述';
+    }
+
+    // 顯示成員
+    function displayMembers(members) {
+      const container = document.getElementById('members-container');
+      container.innerHTML = members.map(member => `
+        <div class="member-item">
+          <span>${member.username} (${member.email})</span>
+          <span class="badge ${member.role === 'admin' ? 'badge-admin' : 'badge-member'}">
+            ${member.role === 'admin' ? '管理員' : '成員'}
+          </span>
+        </div>
+      `).join('');
+
+      // 更新任務指派下拉選單
+      const assigneeSelect = document.getElementById('task-assignee');
+      assigneeSelect.innerHTML = '<option value="">不指派</option>' + 
+        members.map(m => `<option value="${m.id}">${m.username}</option>`).join('');
+    }
+
+    // 顯示任務
+    function displayTasks(tasks) {
+      const container = document.getElementById('tasks-container');
+      
+      if (tasks.length === 0) {
+        container.innerHTML = '<p class="empty-state">還沒有任務</p>';
+        return;
+      }
+
+      container.innerHTML = tasks.map(task => `
+        <div class="task-item ${task.status}">
+          <div class="task-header">
+            <h4>${task.title}</h4>
+            <select onchange="updateTaskStatus(${task.id}, this.value)" class="status-select">
+              <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>待處理</option>
+              <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>進行中</option>
+              <option value="done" ${task.status === 'done' ? 'selected' : ''}>已完成</option>
+            </select>
+          </div>
+          <p class="task-desc">${task.description || '沒有描述'}</p>
+          <div class="task-meta">
+            <span class="badge badge-${task.priority}">${getPriorityText(task.priority)}</span>
+            ${task.assigned_to ? `<span>👤 ${task.assigned_to.username}</span>` : '<span>未指派</span>'}
+            ${task.due_date ? `<span>📅 ${formatDate(task.due_date)}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 篩選任務
+    function filterTasks(status) {
+      currentFilter = status;
+      
+      // 更新按鈕樣式
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // 篩選並顯示
+      const filtered = status === 'all' 
+        ? tasksData 
+        : tasksData.filter(t => t.status === status);
+      
+      displayTasks(filtered);
+    }
+
+    // 更新任務狀態
+    async function updateTaskStatus(taskId, newStatus) {
+      try {
+        const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        if (response.ok) {
+          loadProject(); // 重新載入
+        }
+      } catch (error) {
+        alert('更新失敗');
+      }
+    }
+
+    // 顯示新增任務 Modal
+    function showAddTaskModal() {
+      document.getElementById('add-task-modal').classList.remove('hidden');
+    }
+
+    function hideTaskModal() {
+      document.getElementById('add-task-modal').classList.add('hidden');
+    }
+
+    // 建立任務
+    async function createTask() {
+      const title = document.getElementById('task-title').value;
+      const description = document.getElementById('task-description').value;
+      const assigned_to = document.getElementById('task-assignee').value;
+      const priority = document.getElementById('task-priority').value;
+      const due_date = document.getElementById('task-due-date').value;
+
+      if (!title.trim()) {
+        alert('請輸入任務標題');
+        return;
+      }
+
+      const body = { title, description, priority };
+      if (assigned_to) body.assigned_to = parseInt(assigned_to);
+      if (due_date) body.due_date = due_date;
+
+      try {
+        const response = await fetch(`${API_URL}/projects/${projectId}/tasks`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (response.ok) {
+          hideTaskModal();
+          loadProject();
+        } else {
+          const data = await response.json();
+          alert(data.error || '建立失敗');
+        }
+      } catch (error) {
+        alert('網路錯誤');
+      }
+    }
+
+    // 顯示邀請成員 Modal
+    function showAddMemberModal() {
+      document.getElementById('add-member-modal').classList.remove('hidden');
+    }
+
+    function hideMemberModal() {
+      document.getElementById('add-member-modal').classList.add('hidden');
+    }
+
+    // 邀請成員
+    async function addMember() {
+      const email = document.getElementById('member-email').value;
+      const role = document.getElementById('member-role').value;
+
+      if (!email) {
+        alert('請輸入 Email');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/projects/${projectId}/members`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ user_email: email, role })
+        });
+
+        if (response.ok) {
+          hideMemberModal();
+          loadProject();
+        } else {
+          const data = await response.json();
+          alert(data.error || '邀請失敗');
+        }
+      } catch (error) {
+        alert('網路錯誤');
+      }
+    }
+
+    // 輔助函數
+    function getPriorityText(priority) {
+      const map = { low: '低', medium: '中', high: '高' };
+      return map[priority] || priority;
+    }
+
+    function formatDate(dateStr) {
+      return new Date(dateStr).toLocaleDateString('zh-TW');
+    }
+
+    function goBack() {
+      window.location.href = 'dashboard.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'index.html';
+    }
+
+    // 頁面載入
+    loadProject();
+  </script>
+</body>
+</html>
