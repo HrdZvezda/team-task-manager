@@ -41,7 +41,17 @@ class LoginSchema(Schema):
 
 def get_bcrypt():
     """從 Flask app extensions 取得 bcrypt 實例 (不用 global variable)"""
-    return current_app.extensions.get('bcrypt')
+    try:
+        bcrypt = current_app.extensions.get('bcrypt')
+        if bcrypt is None:
+            # 如果還是找不到,嘗試直接從 app 取得
+            from flask_bcrypt import Bcrypt
+            bcrypt = Bcrypt(current_app)
+            current_app.extensions['bcrypt'] = bcrypt
+        return bcrypt
+    except Exception as e:
+        logger.error(f"Failed to get bcrypt: {str(e)}")
+        return None
 
 def validate_request_data(schema_class, data):
     """
@@ -91,7 +101,7 @@ def register():
     if not bcrypt:
     # 這裡應該要檢查並回傳 500 錯誤，而不是直接讓它崩潰
         logger.error("Bcrypt extension not loaded correctly.")
-    return jsonify({'error': 'Server configuration error (Bcrypt missing)'}), 500
+        return jsonify({'error': 'Server configuration error (Bcrypt missing)'}), 500
 
     hashed_password = bcrypt.generate_password_hash(result['password']).decode('utf-8')
 

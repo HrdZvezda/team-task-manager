@@ -39,7 +39,8 @@
   </div>
 
   <script>
-    const API_URL = 'https://team-task-manager-lr5e.onrender.com';
+    // const API_URL = 'https://team-task-manager-lr5e.onrender.com';
+    const API_URL = 'http://127.0.0.1:8888';
 
     // 顯示登入表單
     function showLogin() {
@@ -96,6 +97,9 @@
         return;
       }
 
+      console.log('=== 開始登入 ===');
+      console.log('Email:', email);
+
       try {
         const response = await fetch(`${API_URL}/auth/login`, {
           method: 'POST',
@@ -103,22 +107,64 @@
           body: JSON.stringify({ email, password })
         });
 
+        console.log('Response status:', response.status);
+        
         const data = await response.json();
+        console.log('Response data:', data);
 
         if (response.ok) {
+          // 改進版 API 使用 access_token 而不是 token
+          const token = data.access_token || data.token;
+          
+          console.log('取得的 token:', token ? token.substring(0, 50) + '...' : 'null');
+          
+          if (!token) {
+            console.error('❌ 沒有收到 token!');
+            showMessage('登入失敗: 沒有收到 token', 'error');
+            return;
+          }
+
+          // 驗證 token 格式 (JWT 應該有 3 個部分,用 . 分隔)
+          const parts = token.split('.');
+          if (parts.length !== 3) {
+            console.error('❌ Token 格式錯誤,部分數:', parts.length);
+            showMessage('登入失敗: Token 格式錯誤', 'error');
+            return;
+          }
+
+          console.log('✅ Token 格式正確');
+
           // 儲存 token 和使用者資訊
-          localStorage.setItem('token', data.token);
+          localStorage.setItem('token', token);
           localStorage.setItem('user', JSON.stringify(data.user));
+          
+          // 驗證儲存
+          const savedToken = localStorage.getItem('token');
+          const savedUser = localStorage.getItem('user');
+          
+          console.log('儲存的 token:', savedToken ? savedToken.substring(0, 50) + '...' : 'null');
+          console.log('儲存的 user:', savedUser);
+          
+          if (!savedToken || savedToken === 'undefined') {
+            console.error('❌ Token 儲存失敗!');
+            showMessage('登入失敗: 無法儲存登入狀態', 'error');
+            return;
+          }
+
+          console.log('✅ 登入資訊儲存成功');
           
           showMessage('登入成功!', 'success');
           setTimeout(() => {
+            console.log('準備跳轉到 dashboard...');
             window.location.href = 'dashboard.html';
           }, 1000);
         } else {
+          console.error('登入失敗:', data);
           showMessage(data.error || '登入失敗', 'error');
         }
       } catch (error) {
-        showMessage('網路錯誤', 'error');
+        console.error('網路錯誤:', error);
+        showMessage('網路錯誤: ' + error.message, 'error');
       }
     }
 

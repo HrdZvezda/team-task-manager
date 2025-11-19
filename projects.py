@@ -77,50 +77,29 @@ def check_project_access(project_id, user_id):
         return False, None, None
 
 def check_project_admin(project_id, user_id):
-    """
-    檢查使用者是否為專案管理員
-    
-    改進點:加上錯誤處理和 project 存在性檢查
-    """
-    # try:
-    #     project = Project.query.get(project_id)
-        
-    #     if not project:
-    #         return False
-        
-    #     # Owner 視為 admin
-    #     if project.owner_id == user_id:
-    #         return True
-        
-    #     # 檢查 member role
-    #     member = ProjectMember.query.filter_by(
-    #         project_id=project_id,
-    #         user_id=user_id,
-    #         role='admin'
-    #     ).first()
-        
-    #     return member is not None
-        
-    # except Exception as e:
-    #     logger.error(f"Error checking project admin: {str(e)}", exc_info=True)
-    #     return False
+    """檢查使用者是否為專案管理員"""
     try:
-        project = Project.query.options(joinedload(Project.owner)).get(project_id)
+        project = Project.query.get(project_id)
+        
         if not project:
-            return False, None, None
+            return False
         
-        # 修正：Owner 視為 Admin 權限
+        # Owner 視為 admin
         if project.owner_id == user_id:
-            return True, project, 'admin'  # 這裡改成 admin 以配合前端邏輯
+            return True
         
-        member = ProjectMember.query.filter_by(project_id=project_id, user_id=user_id).first()
-        if member:
-            return True, project, member.role
+        # 檢查 member role
+        member = ProjectMember.query.filter_by(
+            project_id=project_id,
+            user_id=user_id,
+            role='admin'
+        ).first()
         
-        return False, None, None
+        return member is not None
+        
     except Exception as e:
-        logger.error(f"Error checking project access: {str(e)}", exc_info=True)
-        return False, None, None
+        logger.error(f"Error checking project admin: {str(e)}", exc_info=True)
+        return False
 
 def validate_request_data(schema_class, data):
     """統一的輸入驗證"""

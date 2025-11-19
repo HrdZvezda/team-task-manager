@@ -38,12 +38,19 @@
   </div>
 
   <script>
-    const API_URL = 'https://team-task-manager-lr5e.onrender.com';
+    // const API_URL = 'https://team-task-manager-lr5e.onrender.com';
+    const API_URL = 'http://127.0.0.1:8888';
     let token = localStorage.getItem('token');
-    let user = JSON.parse(localStorage.getItem('user'));
+    let user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    console.log('Dashboard 載入');
+    console.log('Token:', token ? token.substring(0, 50) + '...' : 'null');
+    console.log('User:', user);
 
     // 檢查登入
-    if (!token) {
+    if (!token || token === 'null' || token === 'undefined') {
+      console.error('Token 無效,跳轉到登入頁');
+      alert('請先登入');
       window.location.href = 'index.html';
     }
 
@@ -52,19 +59,39 @@
 
     // 載入專案列表
     async function loadProjects() {
+      // 檢查 token
+      if (!token || token === 'null' || token === 'undefined') {
+        console.error('Token 無效:', token);
+        alert('登入狀態無效,請重新登入');
+        logout();
+        return;
+      }
+
+      console.log('使用的 token:', token.substring(0, 30) + '...');
+
       try {
         const response = await fetch(`${API_URL}/projects`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
 
+        console.log('Projects API status:', response.status);
+
         if (response.status === 401) {
+          console.error('Token 無效或已過期');
+          alert('登入已過期,請重新登入');
           logout();
           return;
         }
 
         const data = await response.json();
+        console.log('Projects data:', data);
         displayProjects(data.projects);
+        
       } catch (error) {
+        console.error('載入專案失敗:', error);
         alert('載入專案失敗');
       }
     }

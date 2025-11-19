@@ -25,7 +25,8 @@ app.config.from_object(Config)
 
 # 不要用 '*',應該指定允許的來源
 # 在 production 環境應該從環境變數讀取
-allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+# 改正環境變數名稱
+allowed_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:5500').split(',')
 
 CORS(app, 
      supports_credentials=True, 
@@ -41,6 +42,7 @@ db.init_app(app)
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
 
+app.extensions['bcrypt'] = bcrypt
 
 # Rate Limiting (改進版)
 # 使用 Redis 作為後端 (在 production 環境)
