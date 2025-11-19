@@ -2,7 +2,7 @@ from flask import Flask
 from models import db, User, Project, ProjectMember, Task
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_task.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///task_manager.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
