@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Team Task Manager - Login</title>
-  <link rel="stylesheet" href="../style/style.css">
+  <link rel="stylesheet" href="./style/style.css">
 </head>
 <body>
   <div class="container">
@@ -14,175 +14,138 @@
       <!-- 登入表單 -->
       <div id="login-form" class="form-section">
         <h2>登入</h2>
-        <input type="email" id="login-email" placeholder="Email" required>
-        <input type="password" id="login-password" placeholder="Password" required>
-        <button onclick="login()">登入</button>
+        <form id="login-form-element">
+          <input type="email" id="login-email" placeholder="Email" required>
+          <input type="password" id="login-password" placeholder="Password" required>
+          <button type="submit">登入</button>
+        </form>
         <p class="switch-link">
-          還沒有帳號? <a href="#" onclick="showRegister()">註冊</a>
+          還沒有帳號？<a href="#" onclick="showRegister(); return false;">註冊</a>
         </p>
       </div>
 
       <!-- 註冊表單 -->
       <div id="register-form" class="form-section hidden">
         <h2>註冊</h2>
-        <input type="text" id="register-username" placeholder="Username" required>
-        <input type="email" id="register-email" placeholder="Email" required>
-        <input type="password" id="register-password" placeholder="Password" required>
-        <button onclick="register()">註冊</button>
+        <form id="register-form-element">
+          <input type="text" id="register-username" placeholder="Username" required>
+          <input type="email" id="register-email" placeholder="Email" required>
+          <input type="password" id="register-password" placeholder="Password" 
+                 required minlength="8">
+          <button type="submit">註冊</button>
+        </form>
         <p class="switch-link">
-          已有帳號? <a href="#" onclick="showLogin()">登入</a>
+          已有帳號？<a href="#" onclick="showLogin(); return false;">登入</a>
         </p>
       </div>
-
-      <div id="message" class="message"></div>
     </div>
   </div>
 
+  <!-- 引入 JS -->
+  <script src="./js/config.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/utils.js"></script>
+  
   <script>
-    // const API_URL = 'https://team-task-manager-lr5e.onrender.com';
-    const API_URL = 'http://127.0.0.1:8888';
-
     // 顯示登入表單
     function showLogin() {
       document.getElementById('login-form').classList.remove('hidden');
       document.getElementById('register-form').classList.add('hidden');
-      clearMessage();
     }
 
     // 顯示註冊表單
     function showRegister() {
       document.getElementById('login-form').classList.add('hidden');
       document.getElementById('register-form').classList.remove('hidden');
-      clearMessage();
     }
 
     // 註冊
-    async function register() {
-      const username = document.getElementById('register-username').value;
-      const email = document.getElementById('register-email').value;
+    document.getElementById('register-form-element').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('register-username').value.trim();
+      const email = document.getElementById('register-email').value.trim();
       const password = document.getElementById('register-password').value;
 
+      // 驗證
       if (!username || !email || !password) {
-        showMessage('請填寫所有欄位', 'error');
+        Utils.showError('請填寫所有欄位');
+        return;
+      }
+
+      if (!Utils.isValidEmail(email)) {
+        Utils.showError('Email 格式不正確');
+        return;
+      }
+
+      if (password.length < 8) {
+        Utils.showError('密碼至少需要 8 個字元');
         return;
       }
 
       try {
-        const response = await fetch(`${API_URL}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, email, password })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          showMessage('註冊成功!請登入', 'success');
-          setTimeout(() => showLogin(), 1500);
-        } else {
-          showMessage(data.error || '註冊失敗', 'error');
-        }
+        Utils.showLoading('註冊中...');
+        await AuthAPI.register({ username, email, password });
+        
+        Utils.showSuccess('註冊成功！請登入');
+        
+        // 清空表單
+        document.getElementById('register-form-element').reset();
+        
+        // 切換到登入表單
+        setTimeout(() => showLogin(), 1500);
+        
       } catch (error) {
-        showMessage('網路錯誤', 'error');
+        console.error('註冊失敗:', error);
+        Utils.showError(error.message || '註冊失敗');
+      } finally {
+        Utils.hideLoading();
       }
-    }
+    });
 
     // 登入
-    async function login() {
-      const email = document.getElementById('login-email').value;
+    document.getElementById('login-form-element').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
 
+      // 驗證
       if (!email || !password) {
-        showMessage('請填寫所有欄位', 'error');
+        Utils.showError('請填寫所有欄位');
         return;
       }
 
-      console.log('=== 開始登入 ===');
-      console.log('Email:', email);
+      if (!Utils.isValidEmail(email)) {
+        Utils.showError('Email 格式不正確');
+        return;
+      }
 
       try {
-        const response = await fetch(`${API_URL}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-
-        console.log('Response status:', response.status);
+        Utils.showLoading('登入中...');
+        const data = await AuthAPI.login({ email, password });
         
-        const data = await response.json();
-        console.log('Response data:', data);
-
-        if (response.ok) {
-          // 改進版 API 使用 access_token 而不是 token
-          const token = data.access_token || data.token;
-          
-          console.log('取得的 token:', token ? token.substring(0, 50) + '...' : 'null');
-          
-          if (!token) {
-            console.error('❌ 沒有收到 token!');
-            showMessage('登入失敗: 沒有收到 token', 'error');
-            return;
-          }
-
-          // 驗證 token 格式 (JWT 應該有 3 個部分,用 . 分隔)
-          const parts = token.split('.');
-          if (parts.length !== 3) {
-            console.error('❌ Token 格式錯誤,部分數:', parts.length);
-            showMessage('登入失敗: Token 格式錯誤', 'error');
-            return;
-          }
-
-          console.log('✅ Token 格式正確');
-
-          // 儲存 token 和使用者資訊
-          localStorage.setItem('token', token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          
-          // 驗證儲存
-          const savedToken = localStorage.getItem('token');
-          const savedUser = localStorage.getItem('user');
-          
-          console.log('儲存的 token:', savedToken ? savedToken.substring(0, 50) + '...' : 'null');
-          console.log('儲存的 user:', savedUser);
-          
-          if (!savedToken || savedToken === 'undefined') {
-            console.error('❌ Token 儲存失敗!');
-            showMessage('登入失敗: 無法儲存登入狀態', 'error');
-            return;
-          }
-
-          console.log('✅ 登入資訊儲存成功');
-          
-          showMessage('登入成功!', 'success');
-          setTimeout(() => {
-            console.log('準備跳轉到 dashboard...');
-            window.location.href = 'dashboard.html';
-          }, 1000);
-        } else {
-          console.error('登入失敗:', data);
-          showMessage(data.error || '登入失敗', 'error');
-        }
+        // 儲存 tokens 和使用者資訊
+        api.saveTokens(data.access_token, data.refresh_token);
+        localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(data.user));
+        
+        Utils.showSuccess('登入成功！');
+        
+        // 跳轉到 dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+        
       } catch (error) {
-        console.error('網路錯誤:', error);
-        showMessage('網路錯誤: ' + error.message, 'error');
+        console.error('登入失敗:', error);
+        Utils.showError(error.message || '登入失敗');
+      } finally {
+        Utils.hideLoading();
       }
-    }
-
-    // 顯示訊息
-    function showMessage(msg, type) {
-      const messageDiv = document.getElementById('message');
-      messageDiv.textContent = msg;
-      messageDiv.className = `message ${type}`;
-      messageDiv.style.display = 'block';
-    }
-
-    // 清除訊息
-    function clearMessage() {
-      document.getElementById('message').style.display = 'none';
-    }
+    });
 
     // 檢查是否已登入
-    if (localStorage.getItem('token')) {
+    if (Utils.isAuthenticated()) {
       window.location.href = 'dashboard.html';
     }
   </script>

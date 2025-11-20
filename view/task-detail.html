@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任務詳情 - Team Task Manager</title>
+  <link rel="stylesheet" href="./style/style.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <h1 class="nav-logo">Team Task Manager</h1>
+      <ul class="nav-menu">
+        <li><a href="dashboard.html">專案列表</a></li>
+        <li><a href="my-tasks.html">我的任務</a></li>
+        <li><a href="profile.html">個人資料</a></li>
+        <li><a href="#" onclick="logout()">登出</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- 麵包屑導航 -->
+    <div class="breadcrumb">
+      <a href="dashboard.html">專案列表</a>
+      <span>></span>
+      <a href="#" id="project-link">專案</a>
+      <span>></span>
+      <span id="task-name">任務</span>
+    </div>
+
+    <!-- 任務詳情 -->
+    <div class="task-detail-container">
+      <!-- 任務標題區 -->
+      <div class="task-detail-header">
+        <div class="task-title-section">
+          <h2 id="detail-task-title">載入中...</h2>
+          <div class="task-meta-row">
+            <span class="task-status-badge" id="detail-status">待處理</span>
+            <span class="task-priority" id="detail-priority">中</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="btn-secondary" onclick="editTask()">編輯</button>
+          <button class="btn-secondary" onclick="deleteTask()">刪除</button>
+        </div>
+      </div>
+
+      <!-- 任務詳細資訊 -->
+      <div class="task-detail-body">
+        <!-- 左側：主要資訊 -->
+        <div class="task-detail-main">
+          <!-- 描述 -->
+          <section class="detail-section">
+            <h3>任務描述</h3>
+            <p id="detail-description">載入中...</p>
+          </section>
+
+          <!-- 附件 -->
+          <section class="detail-section">
+            <h3>附件</h3>
+            <div id="attachments-list" class="attachments-grid">
+              <!-- 附件會動態載入 -->
+            </div>
+            <button class="btn-small" onclick="uploadAttachment()">+ 上傳附件</button>
+          </section>
+
+          <!-- 評論區 -->
+          <section class="detail-section">
+            <h3>評論 <span id="comments-count">(0)</span></h3>
+            <div class="comments-list" id="comments-list">
+              <!-- 評論會動態載入 -->
+            </div>
+            <div class="comment-form">
+              <textarea id="new-comment" placeholder="新增評論..." rows="3"></textarea>
+              <button class="btn-primary" onclick="addComment()">發送</button>
+            </div>
+          </section>
+
+          <!-- 活動記錄 -->
+          <section class="detail-section">
+            <h3>活動記錄</h3>
+            <div class="activity-list" id="activity-list">
+              <!-- 活動記錄會動態載入 -->
+            </div>
+          </section>
+        </div>
+
+        <!-- 右側：側邊資訊 -->
+        <div class="task-detail-sidebar">
+          <!-- 負責人 -->
+          <div class="sidebar-section">
+            <h4>負責人</h4>
+            <div class="assignee-info" id="assignee-info">
+              <span class="loading">載入中...</span>
+            </div>
+            <button class="btn-small" onclick="changeAssignee()">更改負責人</button>
+          </div>
+
+          <!-- 時間資訊 -->
+          <div class="sidebar-section">
+            <h4>時間</h4>
+            <div class="info-group">
+              <label>建立時間</label>
+              <p id="detail-created-at">-</p>
+            </div>
+            <div class="info-group">
+              <label>更新時間</label>
+              <p id="detail-updated-at">-</p>
+            </div>
+            <div class="info-group">
+              <label>截止日期</label>
+              <p id="detail-due-date">-</p>
+            </div>
+            <button class="btn-small" onclick="changeDueDate()">修改截止日期</button>
+          </div>
+
+          <!-- 標籤 -->
+          <div class="sidebar-section">
+            <h4>標籤</h4>
+            <div class="tags-list" id="tags-list">
+              <!-- 標籤會動態載入 -->
+            </div>
+            <button class="btn-small" onclick="manageTags()">管理標籤</button>
+          </div>
+
+          <!-- 關聯任務 -->
+          <div class="sidebar-section">
+            <h4>關聯任務</h4>
+            <div class="related-tasks" id="related-tasks">
+              <p class="empty-state">暫無關聯任務</p>
+            </div>
+            <button class="btn-small" onclick="linkTask()">連結任務</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 編輯任務 Modal -->
+  <div id="edit-task-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>編輯任務</h3>
+      <form id="edit-task-form">
+        <input type="text" id="edit-title" placeholder="任務標題" required>
+        <textarea id="edit-description" placeholder="任務描述" rows="4"></textarea>
+        
+        <select id="edit-status">
+          <option value="todo">待處理</option>
+          <option value="in_progress">進行中</option>
+          <option value="done">已完成</option>
+        </select>
+
+        <select id="edit-priority">
+          <option value="low">低</option>
+          <option value="medium">中</option>
+          <option value="high">高</option>
+        </select>
+
+        <label for="edit-due-date">截止日期</label>
+        <input type="date" id="edit-due-date">
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">儲存</button>
+          <button type="button" class="btn-secondary" onclick="closeEditModal()">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 更改負責人 Modal -->
+  <div id="change-assignee-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>更改負責人</h3>
+      <select id="new-assignee">
+        <option value="">載入成員...</option>
+      </select>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="updateAssignee()">確定</button>
+        <button class="btn-secondary" onclick="closeChangeAssigneeModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入 JS -->
+  <script src="./js/config.js"></script>
+  <script src="./js/task-detail.js"></script>
+</body>
+</html>

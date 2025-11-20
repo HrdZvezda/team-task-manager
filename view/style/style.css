@@ -8,6 +8,8 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   background: #f5f5f5;
   color: #333;
+  writing-mode: horizontal-tb;  /* 強制水平書寫 */
+  direction: ltr;  /* 從左到右 */
 }
 
 /* Navbar */
@@ -35,7 +37,7 @@ body {
 .container {
   max-width: 1200px;
   margin: 2rem auto;
-  padding: 0 1rem;
+  padding: 0 2rem;  /* 從 1rem 改為 2rem */
 }
 
 /* Auth Box */
@@ -44,18 +46,23 @@ body {
   margin: 100px auto;
   background: white;
   padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
 }
 
 .auth-box h1 {
   text-align: center;
   color: #667eea;
   margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
 .auth-box h2 {
   margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 500;
 }
 
 /* Form */
@@ -72,6 +79,9 @@ body {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+  transition: border-color 0.3s;
+  width: 100%;
+  margin-bottom: 1.2rem;
 }
 
 .form-section input:focus,
@@ -79,17 +89,24 @@ body {
 .form-section select:focus {
   outline: none;
   border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .switch-link {
   text-align: center;
   margin-top: 1rem;
   color: #666;
+  font-size: 0.9rem;
 }
 
 .switch-link a {
   color: #667eea;
   text-decoration: none;
+  font-weight: 500;
+}
+
+.switch-link a:hover {
+  text-decoration: underline;
 }
 
 .hidden {
@@ -104,6 +121,22 @@ button {
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s;
+  font-weight: 500;
+  writing-mode: horizontal-tb;  /* 強制水平排列 */
+  white-space: nowrap;  /* 防止文字換行 */
+}
+
+/* 表單內的 submit 按鈕預設套用主要按鈕樣式 */
+form button[type="submit"],
+.form-section button[type="submit"] {
+  width: 100%;
+  background: #667eea;
+  color: white;
+}
+
+form button[type="submit"]:hover,
+.form-section button[type="submit"]:hover {
+  background: #5568d3;
 }
 
 .btn-primary {
@@ -131,6 +164,10 @@ button {
   color: white;
 }
 
+.btn-small:hover {
+  background: #5568d3;
+}
+
 /* Message */
 .message {
   padding: 1rem;
@@ -155,47 +192,63 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;  /* 從 2rem 改為 2.5rem */
+  padding-bottom: 1.5rem;  /* 新增底部 padding */
+  border-bottom: 1px solid #e0e0e0;  /* 新增分隔線 */
+}
+
+.page-header h2 {
+  color: #333;
+  font-size: 1.75rem;
+  font-weight: 600;
 }
 
 /* Projects Grid */
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  gap: 2rem;  /* 從 1.5rem 改為 2rem */
 }
 
 .project-card {
   background: white;
-  padding: 1.5rem;
+  padding: 2rem;  /* 從 1.5rem 改為 2rem */
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #f0f0f0;  /* 新增邊框 */
 }
 
 .project-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);  /* 加強陰影 */
+  border-color: #667eea;  /* hover 時邊框變色 */
 }
 
 .project-card h3 {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;  /* 從 0.5rem 改為 0.75rem */
   color: #333;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .project-desc {
   color: #666;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  margin-bottom: 1.5rem;  /* 從 1rem 改為 1.5rem */
+  font-size: 0.95rem;  /* 從 0.9rem 改為 0.95rem */
+  line-height: 1.6;
+  min-height: 2.4em;  /* 確保最小高度，即使沒有描述 */
 }
 
 .project-stats {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 1.25rem;  /* 從 1rem 改為 1.25rem */
+  margin-bottom: 1.25rem;  /* 從 1rem 改為 1.25rem */
   font-size: 0.9rem;
   color: #666;
+  padding-top: 1rem;  /* 新增頂部 padding */
+  border-top: 1px solid #f0f0f0;  /* 新增分隔線 */
 }
 
 .project-meta {
@@ -253,98 +306,124 @@ button {
 /* Project Header */
 .project-header {
   background: white;
-  padding: 2rem;
+  padding: 2.5rem;  /* 從 2rem 改為 2.5rem */
   border-radius: 8px;
   margin-bottom: 2rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 2rem;  /* 新增 gap */
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .project-header h2 {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;  /* 增加底部間距 */
+  color: #333;
+  font-size: 1.75rem;
+  font-weight: 600;
 }
 
 .project-header p {
   color: #666;
+  line-height: 1.6;
+  margin-top: 0.5rem;
 }
 
 /* Section */
 .section {
   background: white;
-  padding: 1.5rem;
+  padding: 2rem;  /* 增加 padding */
   border-radius: 8px;
   margin-bottom: 2rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .section h3 {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;  /* 增加底部間距 */
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: #333;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 /* Members List */
 .members-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;  /* 從 0.75rem 改為 1rem */
 }
 
 .member-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
+  padding: 1rem;  /* 從 0.75rem 改為 1rem */
   background: #f9f9f9;
-  border-radius: 4px;
+  border-radius: 6px;  /* 從 4px 改為 6px */
+  transition: background 0.2s;
+}
+
+.member-item:hover {
+  background: #f0f0f0;
 }
 
 /* Task Filters */
 .task-filters {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0.75rem;  /* 從 0.5rem 改為 0.75rem */
+  margin-bottom: 1.5rem;  /* 從 1rem 改為 1.5rem */
   flex-wrap: wrap;
 }
 
 .filter-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1.25rem;  /* 從 0.5rem 1rem 改為 0.625rem 1.25rem */
   background: #f0f0f0;
   color: #666;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid #e0e0e0;  /* 新增邊框 */
+  border-radius: 6px;  /* 從 4px 改為 6px */
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.95rem;  /* 從 0.9rem 改為 0.95rem */
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .filter-btn.active {
   background: #667eea;
   color: white;
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);  /* 新增陰影 */
 }
 
 .filter-btn:hover {
   background: #e0e0e0;
+  border-color: #d0d0d0;
 }
 
 .filter-btn.active:hover {
   background: #5568d3;
+  border-color: #5568d3;
 }
 
 /* Tasks List */
 .tasks-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;  /* 從 1rem 改為 1.25rem */
 }
 
 .task-item {
-  padding: 1rem;
+  padding: 1.5rem;  /* 從 1rem 改為 1.5rem */
   background: #f9f9f9;
-  border-radius: 4px;
+  border-radius: 6px;  /* 從 4px 改為 6px */
   border-left: 4px solid #ccc;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
 }
 
 .task-item.todo {
@@ -365,34 +444,52 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;  /* 從 0.5rem 改為 0.75rem */
+  gap: 1rem;  /* 新增 gap */
 }
 
 .task-header h4 {
   margin: 0;
   color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .status-select {
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem 0.75rem;  /* 增加 padding */
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;  /* 從 0.85rem 改為 0.9rem */
   cursor: pointer;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.status-select:hover {
+  border-color: #667eea;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .task-desc {
   color: #666;
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
+  margin-bottom: 1rem;  /* 從 0.75rem 改為 1rem */
+  font-size: 0.95rem;  /* 從 0.9rem 改為 0.95rem */
+  line-height: 1.6;
 }
 
 .task-meta {
   display: flex;
-  gap: 1rem;
-  font-size: 0.85rem;
+  gap: 1.25rem;  /* 從 1rem 改為 1.25rem */
+  font-size: 0.9rem;  /* 從 0.85rem 改為 0.9rem */
   color: #666;
   flex-wrap: wrap;
+  padding-top: 0.75rem;  /* 新增頂部 padding */
+  border-top: 1px solid rgba(0,0,0,0.05);  /* 新增淡分隔線 */
 }
 
 /* Modal */
@@ -402,36 +499,44 @@ button {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);  /* 從 0.5 改為 0.6，背景更深 */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 1rem;  /* 新增 padding */
 }
 
 .modal-content {
   background: white;
-  padding: 2rem;
-  border-radius: 8px;
+  padding: 2.5rem;  /* 從 2rem 改為 2.5rem */
+  border-radius: 12px;  /* 從 8px 改為 12px */
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);  /* 加強陰影 */
 }
 
 .modal-content h3 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;  /* 從 1.5rem 改為 2rem */
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding-bottom: 1rem;  /* 新增底部 padding */
+  border-bottom: 2px solid #f0f0f0;  /* 新增分隔線 */
 }
 
 .modal-content input,
 .modal-content textarea,
 .modal-content select {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.875rem;  /* 從 0.75rem 改為 0.875rem */
   border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  border-radius: 6px;  /* 從 4px 改為 6px */
+  margin-bottom: 1.25rem;  /* 從 1rem 改為 1.25rem */
   font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .modal-content input:focus,
@@ -439,12 +544,15 @@ button {
 .modal-content select:focus {
   outline: none;
   border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .modal-actions {
   display: flex;
   gap: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 2rem;  /* 從 1.5rem 改為 2rem */
+  padding-top: 1.5rem;  /* 新增頂部 padding */
+  border-top: 1px solid #f0f0f0;  /* 新增分隔線 */
 }
 
 .modal-actions button {
@@ -476,5 +584,1089 @@ button {
 
   .modal-content {
     padding: 1.5rem;
+  }
+}
+/* ============================================
+   Toast 訊息
+   ============================================ */
+.toast {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  transition: top 0.3s ease;
+  min-width: 300px;
+  text-align: center;
+}
+
+.toast.show {
+  top: 20px;
+}
+
+.toast-success {
+  background: #00bb00;
+}
+
+.toast-error {
+  background: #ff4444;
+}
+
+.toast-warning {
+  background: #ffaa00;
+}
+
+.toast-info {
+  background: #667eea;
+}
+
+/* ============================================
+   Loading 載入動畫
+   ============================================ */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+  color: #666;
+  margin: 0;
+}
+
+/* ============================================
+   確認對話框
+   ============================================ */
+.confirm-modal .modal-content {
+  max-width: 400px;
+}
+
+.confirm-modal h3 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.confirm-modal p {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* ============================================
+   個人資料頁面
+   ============================================ */
+.profile-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 2rem;  /* 新增左右 padding */
+}
+
+.profile-section {
+  background: white;
+  padding: 2.5rem;  /* 從 2rem 改為 2.5rem */
+  border-radius: 8px;
+  margin: 2rem 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.profile-section h3 {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;  /* 增加底部 padding */
+  border-bottom: 2px solid #667eea;
+  color: #333;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;  /* 從 1rem 改為 1.25rem */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;  /* 新增 gap */
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  color: #999;
+}
+
+.form-group small {
+  color: #666;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* 資訊顯示區塊（非表單輸入） */
+.info-group {
+  margin-bottom: 1.5rem;
+}
+
+.info-group:last-child {
+  margin-bottom: 0;
+}
+
+.info-group label {
+  display: block;
+  font-weight: 600;
+  color: #666;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-group p {
+  margin: 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.info-group .status-active {
+  color: #00bb00;
+  font-weight: 600;
+}
+
+.info-group .status-inactive {
+  color: #ff4444;
+  font-weight: 600;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;  /* 從 1rem 改為 1.5rem */
+  padding-top: 1rem;  /* 新增頂部 padding */
+  border-top: 1px solid #f0f0f0;  /* 新增分隔線 */
+}
+
+.form-actions button {
+  flex: 1;
+  min-width: 120px;  /* 確保最小寬度 */
+  writing-mode: horizontal-tb;  /* 強制水平 */
+  text-orientation: mixed;  /* 確保文字方向正確 */
+}
+
+/* ============================================
+   我的任務頁面
+   ============================================ */
+.my-tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.task-group {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.task-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #667eea;
+}
+
+.task-group-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.task-group-count {
+  background: #667eea;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   工具按鈕
+   ============================================ */
+.btn-icon {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+  font-size: 1.2rem;
+}
+
+.btn-icon:hover {
+  color: #667eea;
+}
+
+.btn-icon.delete {
+  color: #ff4444;
+}
+
+.btn-icon.delete:hover {
+  color: #cc0000;
+}
+
+/* ============================================
+   空狀態改進
+   ============================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 2rem;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state-text {
+  font-size: 1.125rem;
+  color: #999;
+  margin-bottom: 1.5rem;
+}
+
+/* ============================================
+   任務操作按鈕
+   ============================================ */
+.task-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.task-item:hover .task-actions {
+  opacity: 1;
+}
+
+/* ============================================
+   專案操作按鈕
+   ============================================ */
+.project-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ============================================
+   響應式調整
+   ============================================ */
+@media (max-width: 768px) {
+  .toast {
+    min-width: 250px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+  }
+  
+  .profile-container {
+    padding: 0 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+  
+  .my-tasks-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+/* ============================================
+   通知系統
+   ============================================ */
+
+/* 通知圖示 (Navbar) */
+.notification-bell {
+  position: relative;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  margin-left: 1rem;
+  transition: transform 0.2s;
+}
+
+.notification-bell:hover {
+  transform: scale(1.1);
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #ff4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* 通知下拉選單 */
+.notification-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: 400px;
+  max-height: 500px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.notification-dropdown-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-dropdown-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.mark-all-read-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.mark-all-read-btn:hover {
+  text-decoration: underline;
+}
+
+.notification-dropdown-list {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.notification-dropdown-item {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  gap: 0.75rem;
+  transition: background 0.2s;
+}
+
+.notification-dropdown-item:hover {
+  background: #f9f9f9;
+}
+
+.notification-dropdown-item.unread {
+  background: #f0f4ff;
+}
+
+.dropdown-notification-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.dropdown-notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.dropdown-notification-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.dropdown-notification-body {
+  color: #666;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-notification-time {
+  color: #999;
+  font-size: 0.75rem;
+}
+
+.notification-dropdown-footer {
+  padding: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.notification-dropdown-footer a {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.notification-dropdown-footer a:hover {
+  text-decoration: underline;
+}
+
+.dropdown-empty {
+  padding: 2rem;
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+/* 通知統計卡片 */
+.notification-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+  background: #f0f4ff;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* 通知篩選器 */
+.notification-filters {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* 通知操作按鈕 */
+.notification-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 通知列表容器 */
+.notifications-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 通知項目 */
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.unread {
+  background: #f0f4ff;
+}
+
+.notification-item:hover {
+  background: #f9f9f9;
+}
+
+.notification-item.unread:hover {
+  background: #e8f0ff;
+}
+
+.notification-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.notification-time {
+  color: #999;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.notification-body {
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.icon-btn:hover {
+  background: #e0e0e0;
+}
+
+/* 空狀態 */
+.loading-state {
+  padding: 3rem;
+  text-align: center;
+  color: #999;
+  font-size: 1rem;
+}
+
+/* 響應式 - 通知系統 */
+@media (max-width: 768px) {
+  .notification-dropdown {
+    width: calc(100vw - 40px);
+    right: 20px;
+  }
+
+  .notification-stats {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 2rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .notification-filters {
+    flex-direction: column;
+  }
+
+  .notification-filters .filter-btn {
+    width: 100%;
+  }
+
+  .notification-item {
+    padding: 1rem;
+  }
+
+  .notification-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+  }
+}
+/* ============================================
+   任務詳情 Modal (含評論)
+   ============================================ */
+
+/* 大型 Modal */
+.modal-large {
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+  padding: 0.5rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.task-detail-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* 任務資訊區塊 */
+.task-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.info-row label {
+  font-weight: 600;
+  color: #666;
+  font-size: 0.9rem;
+  padding-top: 0.5rem;
+}
+
+.info-row select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+}
+
+.info-row select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.info-row p {
+  margin: 0;
+  color: #333;
+  line-height: 1.6;
+  padding-top: 0.5rem;
+}
+
+.priority-badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* 評論區塊 */
+.comments-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.comments-section h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+#comments-count-badge {
+  color: #999;
+  font-weight: normal;
+  font-size: 0.9rem;
+}
+
+.task-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.comment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.comment-item:hover {
+  background: #f0f0f0;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.comment-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.comment-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.comment-time {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.comment-body {
+  color: #666;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  padding-left: 48px;
+}
+
+/* 新增評論表單 */
+.add-comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.add-comment-form textarea {
+  padding: 0.875rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.add-comment-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.add-comment-form button {
+  align-self: flex-end;
+}
+
+/* 評論狀態 */
+.loading-comments,
+.empty-comments,
+.error-comments {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+  font-size: 0.95rem;
+}
+
+.error-comments {
+  color: #ff4444;
+}
+
+.empty-comments {
+  color: #999;
+  font-style: italic;
+}
+
+/* 任務卡片 cursor */
+.task-item {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 響應式 - 任務詳情 Modal */
+@media (max-width: 768px) {
+  .modal-large {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .info-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .info-row label {
+    padding-top: 0;
+  }
+
+  .comment-body {
+    padding-left: 0;
+  }
+
+  .task-comments-list {
+    max-height: 300px;
+  }
+}
+
+/* ============================================
+   專案統計
+   ============================================ */
+
+  .project-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.project-stats .stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.project-stats .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.project-stats .stat-icon {
+  font-size: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.project-stats .stat-info {
+  flex: 1;
+}
+
+.project-stats .stat-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.project-stats .stat-label {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+/* 響應式 - 專案統計 */
+@media (max-width: 768px) {
+  .project-stats {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .project-stats .stat-card {
+    padding: 1rem;
+  }
+
+  .project-stats .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.75rem;
+  }
+
+  .project-stats .stat-value {
+    font-size: 1.5rem;
   }
 }

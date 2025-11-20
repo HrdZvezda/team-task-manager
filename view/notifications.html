@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>通知中心 - Team Task Manager</title>
+  <link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <h1 class="nav-logo">Team Task Manager</h1>
+      <ul class="nav-menu">
+        <li><a href="dashboard.html">專案列表</a></li>
+        <li><a href="my-tasks.html">我的任務</a></li>
+        <li><a href="notifications.html" class="active">通知中心</a></li>
+        <li><a href="profile.html">個人資料</a></li>
+        <li><a href="#" onclick="logout()">登出</a></li>
+      </ul>
+      <!-- 通知圖示 -->
+      <div class="notification-bell" onclick="toggleNotificationDropdown()">
+        🔔
+        <span class="notification-badge" id="nav-notification-badge" style="display: none;">0</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 通知下拉選單 -->
+  <div id="notification-dropdown" class="notification-dropdown" style="display: none;">
+    <div class="notification-dropdown-header">
+      <h3>最近通知</h3>
+      <button class="mark-all-read-btn" onclick="markAllAsRead()">全部標記已讀</button>
+    </div>
+    <div id="recent-notifications" class="notification-dropdown-list">
+      <!-- 最近通知會動態載入 -->
+    </div>
+    <div class="notification-dropdown-footer">
+      <a href="notifications.html">查看全部通知</a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- 頁面標題 -->
+    <div class="page-header">
+      <h2>通知中心</h2>
+    </div>
+
+    <!-- 通知統計 -->
+    <div class="notification-stats">
+      <div class="stat-card">
+        <div class="stat-icon">📬</div>
+        <div class="stat-info">
+          <div class="stat-value" id="unread-count">0</div>
+          <div class="stat-label">未讀通知</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-info">
+          <div class="stat-value" id="today-count">0</div>
+          <div class="stat-label">今日通知</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <div class="stat-value" id="week-count">0</div>
+          <div class="stat-label">本週通知</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-info">
+          <div class="stat-value" id="total-count">0</div>
+          <div class="stat-label">總通知數</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 篩選器 -->
+    <div class="notification-filters">
+      <button class="filter-btn active" onclick="filterNotifications('all')" data-filter="all">
+        全部
+      </button>
+      <button class="filter-btn" onclick="filterNotifications('unread')" data-filter="unread">
+        僅未讀
+      </button>
+      <button class="filter-btn" onclick="filterNotifications('task')" data-filter="task">
+        任務通知
+      </button>
+      <button class="filter-btn" onclick="filterNotifications('project')" data-filter="project">
+        專案通知
+      </button>
+      <button class="filter-btn" onclick="filterNotifications('comment')" data-filter="comment">
+        評論通知
+      </button>
+      <button class="filter-btn" onclick="filterNotifications('mention')" data-filter="mention">
+        提及通知
+      </button>
+    </div>
+
+    <!-- 批次操作 -->
+    <div class="notification-actions">
+      <button class="btn-secondary" onclick="markAllAsRead()">全部標記已讀</button>
+      <button class="btn-secondary" onclick="deleteAllRead()">刪除已讀通知</button>
+    </div>
+
+    <!-- 通知列表 -->
+    <div class="notifications-container">
+      <div id="notifications-list" class="notifications-list">
+        <!-- 通知會動態載入 -->
+        <div class="loading-state">載入中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入 JS -->
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/notifications.js"></script>
+</body>
+</html>

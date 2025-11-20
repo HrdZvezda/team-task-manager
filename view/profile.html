@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>個人資料 - Team Task Manager</title>
+  <link rel="stylesheet" href="./style/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>Team Task Manager</h1>
+    <div class="nav-right">
+      <button onclick="goToDashboard()" class="btn-secondary">← 返回</button>
+      <button onclick="logout()" class="btn-secondary">登出</button>
+    </div>
+  </div>
+
+  <div class="container profile-container">
+    <!-- 個人資訊區塊 -->
+    <div class="profile-section">
+      <h3>個人資訊</h3>
+      
+      <form class="profile-form" id="profile-form">
+        <div class="form-group">
+          <label for="username">使用者名稱 *</label>
+          <input type="text" id="username" name="username" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" disabled>
+        </div>
+
+        <div class="form-group">
+          <label for="bio">個人簡介</label>
+          <textarea id="bio" name="bio" rows="3" placeholder="介紹一下自己..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">電話</label>
+          <input type="tel" id="phone" name="phone" placeholder="0912-345-678">
+        </div>
+
+        <div class="form-group">
+          <label for="department">部門</label>
+          <input type="text" id="department" name="department" placeholder="例如：工程部">
+        </div>
+
+        <div class="form-group">
+          <label for="position">職位</label>
+          <input type="text" id="position" name="position" placeholder="例如：前端工程師">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">儲存變更</button>
+          <button type="button" class="btn-secondary" onclick="loadProfile()">取消</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 密碼修改區塊 -->
+    <div class="profile-section">
+      <h3>修改密碼</h3>
+      
+      <form class="profile-form" id="password-form">
+        <div class="form-group">
+          <label for="current-password">目前密碼 *</label>
+          <input type="password" id="current-password" name="current_password" required>
+        </div>
+
+        <div class="form-group">
+          <label for="new-password">新密碼 *</label>
+          <input type="password" id="new-password" name="new_password" required 
+                 minlength="8" placeholder="至少 8 個字元">
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-password">確認新密碼 *</label>
+          <input type="password" id="confirm-password" name="confirm_password" required
+                 minlength="8">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">更新密碼</button>
+          <button type="button" class="btn-secondary" onclick="clearPasswordForm()">清除</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 帳號資訊 -->
+    <div class="profile-section">
+      <h3>帳號資訊</h3>
+      
+      <div class="info-group">
+        <label>帳號狀態</label>
+        <p id="account-status"></p>
+      </div>
+
+      <div class="info-group">
+        <label>最後登入時間</label>
+        <p id="last-login"></p>
+      </div>
+
+      <div class="info-group">
+        <label>註冊時間</label>
+        <p id="created-at"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入 JS -->
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  
+  <script>
+    // 載入個人資料
+    async function loadProfile() {
+      try {
+        Utils.showLoading('載入資料中...');
+        const data = await AuthAPI.getMe();
+        
+        // 填充表單
+        document.getElementById('username').value = data.username || '';
+        document.getElementById('email').value = data.email || '';
+        document.getElementById('bio').value = data.bio || '';
+        document.getElementById('phone').value = data.phone || '';
+        document.getElementById('department').value = data.department || '';
+        document.getElementById('position').value = data.position || '';
+        
+        // 顯示帳號資訊
+        const statusElement = document.getElementById('account-status');
+        if (data.is_active) {
+          statusElement.textContent = '✓ 啟用中';
+          statusElement.className = 'status-active';
+        } else {
+          statusElement.textContent = '✗ 已停用';
+          statusElement.className = 'status-inactive';
+        }
+        
+        document.getElementById('last-login').textContent = 
+          data.last_login ? Utils.formatDate(data.last_login, 'YYYY-MM-DD HH:mm:ss') : '無紀錄';
+        
+        document.getElementById('created-at').textContent = 
+          Utils.formatDate(data.created_at, 'YYYY-MM-DD HH:mm:ss');
+        
+      } catch (error) {
+        console.error('載入資料失敗:', error);
+        Utils.showError(error.message || '載入資料失敗');
+      } finally {
+        Utils.hideLoading();
+      }
+    }
+
+    // 更新個人資料
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        username: document.getElementById('username').value.trim(),
+        bio: document.getElementById('bio').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        department: document.getElementById('department').value.trim(),
+        position: document.getElementById('position').value.trim()
+      };
+
+      // 驗證
+      if (!formData.username) {
+        Utils.showError('請輸入使用者名稱');
+        return;
+      }
+
+      if (formData.username.length < 2 || formData.username.length > 50) {
+        Utils.showError('使用者名稱需要 2-50 個字元');
+        return;
+      }
+
+      try {
+        Utils.showLoading('儲存中...');
+        await AuthAPI.updateMe(formData);
+        
+        // 更新 localStorage 中的使用者資訊
+        const user = Utils.getCurrentUser();
+        if (user) {
+          Object.assign(user, formData);
+          localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(user));
+        }
+        
+        Utils.showSuccess('資料已更新');
+        
+      } catch (error) {
+        console.error('更新失敗:', error);
+        Utils.showError(error.message || '更新失敗');
+      } finally {
+        Utils.hideLoading();
+      }
+    });
+
+    // 修改密碼
+    document.getElementById('password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      // 驗證
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        Utils.showError('請填寫所有欄位');
+        return;
+      }
+
+      if (newPassword.length < 8) {
+        Utils.showError('新密碼至少需要 8 個字元');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        Utils.showError('新密碼與確認密碼不符');
+        return;
+      }
+
+      if (currentPassword === newPassword) {
+        Utils.showError('新密碼不能與舊密碼相同');
+        return;
+      }
+
+      try {
+        Utils.showLoading('更新密碼中...');
+        await AuthAPI.changePassword({
+          current_password: currentPassword,
+          new_password: newPassword
+        });
+        
+        Utils.showSuccess('密碼已更新');
+        clearPasswordForm();
+        
+      } catch (error) {
+        console.error('密碼更新失敗:', error);
+        Utils.showError(error.message || '密碼更新失敗');
+      } finally {
+        Utils.hideLoading();
+      }
+    });
+
+    // 清除密碼表單
+    function clearPasswordForm() {
+      document.getElementById('password-form').reset();
+    }
+
+    // 返回 Dashboard
+    function goToDashboard() {
+      window.location.href = 'dashboard.html';
+    }
+
+    // 登出
+    function logout() {
+      Utils.confirm('確定要登出嗎？', () => {
+        api.clearAuth();
+        window.location.href = 'index.html';
+      });
+    }
+
+    // 頁面載入時執行
+    loadProfile();
+  </script>
+</body>
+</html>

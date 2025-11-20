@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Team Task Manager</title>
-  <link rel="stylesheet" href="../style/style.css">
+  <link rel="stylesheet" href="./style/style.css">
 </head>
 <body>
   <div class="navbar">
     <h1>Team Task Manager</h1>
     <div class="nav-right">
+      <button onclick="goToMyTasks()" class="btn-secondary">📋 我的任務</button>
+      <button onclick="goToProfile()" class="btn-secondary">👤 個人資料</button>
       <span id="username"></span>
       <button onclick="logout()" class="btn-secondary">登出</button>
     </div>
@@ -27,72 +29,50 @@
     <div id="create-project-modal" class="modal hidden">
       <div class="modal-content">
         <h3>建立新專案</h3>
-        <input type="text" id="project-name" placeholder="專案名稱" required>
-        <textarea id="project-description" placeholder="專案描述 (選填)" rows="3"></textarea>
-        <div class="modal-actions">
-          <button onclick="createProject()" class="btn-primary">建立</button>
-          <button onclick="hideModal()" class="btn-secondary">取消</button>
-        </div>
+        <form id="create-project-form">
+          <input type="text" id="project-name" placeholder="專案名稱" required>
+          <textarea id="project-description" placeholder="專案描述（選填）" rows="3"></textarea>
+          <div class="modal-actions">
+            <button type="submit" class="btn-primary">建立</button>
+            <button type="button" onclick="hideCreateProjectModal()" class="btn-secondary">
+              取消
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
+  <!-- 引入 JS -->
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  
   <script>
-    // const API_URL = 'https://team-task-manager-lr5e.onrender.com';
-    const API_URL = 'http://127.0.0.1:8888';
-    let token = localStorage.getItem('token');
-    let user = JSON.parse(localStorage.getItem('user') || '{}');
-
-    console.log('Dashboard 載入');
-    console.log('Token:', token ? token.substring(0, 50) + '...' : 'null');
-    console.log('User:', user);
-
-    // 檢查登入
-    if (!token || token === 'null' || token === 'undefined') {
-      console.error('Token 無效,跳轉到登入頁');
-      alert('請先登入');
-      window.location.href = 'index.html';
-    }
-
+    const user = Utils.getCurrentUser();
+    
     // 顯示使用者名稱
-    document.getElementById('username').textContent = user.username;
+    if (user) {
+      document.getElementById('username').textContent = user.username;
+    }
 
     // 載入專案列表
     async function loadProjects() {
-      // 檢查 token
-      if (!token || token === 'null' || token === 'undefined') {
-        console.error('Token 無效:', token);
-        alert('登入狀態無效,請重新登入');
-        logout();
-        return;
-      }
-
-      console.log('使用的 token:', token.substring(0, 30) + '...');
-
       try {
-        const response = await fetch(`${API_URL}/projects`, {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        console.log('Projects API status:', response.status);
-
-        if (response.status === 401) {
-          console.error('Token 無效或已過期');
-          alert('登入已過期,請重新登入');
-          logout();
-          return;
-        }
-
-        const data = await response.json();
-        console.log('Projects data:', data);
-        displayProjects(data.projects);
-        
+        Utils.showLoading('載入專案中...');
+        const data = await ProjectAPI.list();
+        displayProjects(data.projects || []);
       } catch (error) {
         console.error('載入專案失敗:', error);
-        alert('載入專案失敗');
+        Utils.showError(error.message || '載入專案失敗');
+        document.getElementById('projects-container').innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">😔</div>
+            <div class="empty-state-text">載入失敗，請稍後再試</div>
+          </div>
+        `;
+      } finally {
+        Utils.hideLoading();
       }
     }
 
@@ -101,23 +81,33 @@
       const container = document.getElementById('projects-container');
       
       if (projects.length === 0) {
-        container.innerHTML = '<p class="empty-state">還沒有專案,建立第一個吧!</p>';
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">📁</div>
+            <div class="empty-state-text">還沒有專案，建立第一個吧！</div>
+            <button onclick="showCreateProjectModal()" class="btn-primary">
+              + 新增專案
+            </button>
+          </div>
+        `;
         return;
       }
 
       container.innerHTML = projects.map(project => `
         <div class="project-card" onclick="goToProject(${project.id})">
-          <h3>${project.name}</h3>
-          <p class="project-desc">${project.description || '沒有描述'}</p>
+          <h3>${Utils.escapeHtml(project.name)}</h3>
+          <p class="project-desc">
+            ${project.description ? Utils.escapeHtml(project.description) : '沒有描述'}
+          </p>
           <div class="project-stats">
             <span>👥 ${project.member_count} 成員</span>
             <span>📋 ${project.completed_task_count}/${project.task_count} 任務完成</span>
           </div>
           <div class="project-meta">
             <span class="badge ${project.my_role === 'admin' ? 'badge-admin' : 'badge-member'}">
-              ${project.my_role === 'admin' ? '管理員' : '成員'}
+              ${Utils.getRoleText(project.my_role || 'member')}
             </span>
-            <span class="text-muted">by ${project.owner.username}</span>
+            <span class="text-muted">by ${Utils.escapeHtml(project.owner.username)}</span>
           </div>
         </div>
       `).join('');
@@ -128,56 +118,77 @@
       window.location.href = `project.html?id=${projectId}`;
     }
 
+    // 前往我的任務
+    function goToMyTasks() {
+      window.location.href = 'my-tasks.html';
+    }
+
+    // 前往個人資料
+    function goToProfile() {
+      window.location.href = 'profile.html';
+    }
+
     // 顯示建立專案 Modal
     function showCreateProjectModal() {
       document.getElementById('create-project-modal').classList.remove('hidden');
+      document.getElementById('project-name').focus();
     }
 
-    // 隱藏 Modal
-    function hideModal() {
+    // 隱藏建立專案 Modal
+    function hideCreateProjectModal() {
       document.getElementById('create-project-modal').classList.add('hidden');
-      document.getElementById('project-name').value = '';
-      document.getElementById('project-description').value = '';
+      document.getElementById('create-project-form').reset();
     }
 
     // 建立專案
-    async function createProject() {
-      const name = document.getElementById('project-name').value;
-      const description = document.getElementById('project-description').value;
+    document.getElementById('create-project-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('project-name').value.trim();
+      const description = document.getElementById('project-description').value.trim();
 
-      if (!name.trim()) {
-        alert('請輸入專案名稱');
+      if (!name) {
+        Utils.showError('請輸入專案名稱');
         return;
       }
 
       try {
-        const response = await fetch(`${API_URL}/projects`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ name, description })
-        });
-
-        if (response.ok) {
-          hideModal();
-          loadProjects();
-        } else {
-          const data = await response.json();
-          alert(data.error || '建立失敗');
-        }
+        Utils.showLoading('建立中...');
+        await ProjectAPI.create({ name, description });
+        
+        Utils.showSuccess('專案已建立');
+        hideCreateProjectModal();
+        loadProjects();
+        
       } catch (error) {
-        alert('網路錯誤');
+        console.error('建立專案失敗:', error);
+        Utils.showError(error.message || '建立專案失敗');
+      } finally {
+        Utils.hideLoading();
       }
-    }
+    });
 
     // 登出
     function logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = 'index.html';
+      Utils.confirm('確定要登出嗎？', () => {
+        api.clearAuth();
+        window.location.href = 'index.html';
+      });
     }
+
+    // 點擊 Modal 背景關閉
+    document.getElementById('create-project-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'create-project-modal') {
+        hideCreateProjectModal();
+      }
+    });
+
+    // ESC 鍵關閉 Modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        hideCreateProjectModal();
+      }
+    });
 
     // 頁面載入時執行
     loadProjects();

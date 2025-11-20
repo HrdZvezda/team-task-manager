@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的任務 - Team Task Manager</title>
+  <link rel="stylesheet" href="./style/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>Team Task Manager</h1>
+    <div class="nav-right">
+      <button onclick="goToDashboard()" class="btn-secondary">← 返回</button>
+      <button onclick="logout()" class="btn-secondary">登出</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="my-tasks-header">
+      <div>
+        <h2>我的任務</h2>
+        <p style="color: #666; margin-top: 0.5rem;">
+          共 <span id="total-tasks">0</span> 個任務
+        </p>
+      </div>
+      
+      <div class="task-filters">
+        <button onclick="filterTasks('all')" class="filter-btn active" data-status="all">
+          全部
+        </button>
+        <button onclick="filterTasks('todo')" class="filter-btn" data-status="todo">
+          待處理
+        </button>
+        <button onclick="filterTasks('in_progress')" class="filter-btn" data-status="in_progress">
+          進行中
+        </button>
+        <button onclick="filterTasks('done')" class="filter-btn" data-status="done">
+          已完成
+        </button>
+      </div>
+    </div>
+
+    <!-- 任務列表容器 -->
+    <div id="tasks-container"></div>
+  </div>
+
+  <!-- 引入 JS -->
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  
+  <script>
+    let allTasks = [];
+    let currentFilter = 'all';
+
+    // 載入我的任務
+    async function loadMyTasks() {
+      try {
+        Utils.showLoading('載入任務中...');
+        const data = await TaskAPI.myTasks();
+        
+        allTasks = data.tasks || [];
+        displayTasks(allTasks);
+        updateTaskCount();
+        
+      } catch (error) {
+        console.error('載入任務失敗:', error);
+        Utils.showError(error.message || '載入任務失敗');
+        document.getElementById('tasks-container').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">😔</div>
+            <div class="empty-state-text">載入失敗，請稍後再試</div>
+          </div>
+        `;
+      } finally {
+        Utils.hideLoading();
+      }
+    }
+
+    // 顯示任務（按專案分組）
+    function displayTasks(tasks) {
+      const container = document.getElementById('tasks-container');
+      
+      if (tasks.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-text">
+              ${currentFilter === 'all' ? '還沒有任務' : '沒有符合條件的任務'}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 按專案分組
+      const tasksByProject = tasks.reduce((acc, task) => {
+        const projectId = task.project.id;
+        if (!acc[projectId]) {
+          acc[projectId] = {
+            project: task.project,
+            tasks: []
+          };
+        }
+        acc[projectId].tasks.push(task);
+        return acc;
+      }, {});
+
+      // 產生 HTML
+      container.innerHTML = Object.values(tasksByProject).map(group => {
+        const { project, tasks } = group;
+        
+        return `
+          <div class="task-group">
+            <div class="task-group-header">
+              <div class="task-group-title">
+                📁 ${Utils.escapeHtml(project.name)}
+              </div>
+              <div class="task-group-count">${tasks.length}</div>
+            </div>
+            
+            <div class="tasks-list">
+              ${tasks.map(task => createTaskHTML(task)).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 建立單個任務 HTML
+    function createTaskHTML(task) {
+      return `
+        <div class="task-item ${task.status}" data-task-id="${task.id}">
+          <div class="task-header">
+            <h4>${Utils.escapeHtml(task.title)}</h4>
+            <div class="task-actions">
+              <select onchange="updateTaskStatus(${task.id}, this.value)" 
+                      class="status-select">
+                <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>
+                  待處理
+                </option>
+                <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>
+                  進行中
+                </option>
+                <option value="done" ${task.status === 'done' ? 'selected' : ''}>
+                  已完成
+                </option>
+              </select>
+              <button class="btn-icon" onclick="goToProject(${task.project.id})" 
+                      title="前往專案">
+                🔗
+              </button>
+            </div>
+          </div>
+          
+          ${task.description ? `
+            <p class="task-desc">${Utils.escapeHtml(task.description)}</p>
+          ` : ''}
+          
+          <div class="task-meta">
+            <span class="badge ${Utils.getPriorityClass(task.priority)}">
+              ${Utils.getTaskPriorityText(task.priority)}
+            </span>
+            
+            ${task.due_date ? `
+              <span title="截止日期">
+                📅 ${Utils.formatDate(task.due_date)}
+              </span>
+            ` : ''}
+            
+            ${task.created_by ? `
+              <span title="建立者">
+                👤 ${Utils.escapeHtml(task.created_by.username)}
+              </span>
+            ` : ''}
+            
+            <span title="建立時間" style="color: #999;">
+              ${Utils.formatDate(task.created_at, 'relative')}
+            </span>
+          </div>
+        </div>
+      `;
+    }
+
+    // 篩選任務
+    function filterTasks(status) {
+      currentFilter = status;
+      
+      // 更新按鈕樣式
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // 篩選並顯示
+      const filteredTasks = status === 'all' 
+        ? allTasks 
+        : allTasks.filter(t => t.status === status);
+      
+      displayTasks(filteredTasks);
+      updateTaskCount();
+    }
+
+    // 更新任務狀態
+    async function updateTaskStatus(taskId, newStatus) {
+      try {
+        await TaskAPI.update(taskId, { status: newStatus });
+        
+        // 更新本地資料
+        const task = allTasks.find(t => t.id === taskId);
+        if (task) {
+          task.status = newStatus;
+          
+          // 如果是完成狀態，記錄完成時間
+          if (newStatus === CONFIG.TASK_STATUS.DONE) {
+            task.completed_at = new Date().toISOString();
+          }
+          
+          // 重新顯示
+          filterTasks(currentFilter);
+        }
+        
+        Utils.showSuccess('任務狀態已更新');
+        
+      } catch (error) {
+        console.error('更新狀態失敗:', error);
+        Utils.showError(error.message || '更新狀態失敗');
+        // 重新載入以恢復原狀態
+        loadMyTasks();
+      }
+    }
+
+    // 更新任務數量
+    function updateTaskCount() {
+      const filtered = currentFilter === 'all' 
+        ? allTasks 
+        : allTasks.filter(t => t.status === currentFilter);
+      
+      document.getElementById('total-tasks').textContent = filtered.length;
+    }
+
+    // 前往專案頁面
+    function goToProject(projectId) {
+      window.location.href = `project.html?id=${projectId}`;
+    }
+
+    // 返回 Dashboard
+    function goToDashboard() {
+      window.location.href = 'dashboard.html';
+    }
+
+    // 登出
+    function logout() {
+      Utils.confirm('確定要登出嗎？', () => {
+        api.clearAuth();
+        window.location.href = 'index.html';
+      });
+    }
+
+    // 頁面載入時執行
+    loadMyTasks();
+  </script>
+</body>
+</html> 

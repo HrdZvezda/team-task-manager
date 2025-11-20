@@ -22,46 +22,109 @@
         <h2 id="project-name"></h2>
         <p id="project-description"></p>
       </div>
-      <button onclick="showAddTaskModal()" class="btn-primary">+ 新增任務</button>
+      <div class="project-actions" id="project-actions">
+        <!-- 動態插入編輯/刪除按鈕 -->
+      </div>
+    </div>
+
+    <!-- 專案統計 -->
+    <div class="project-stats">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #e3f2fd;">📊</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">總任務數</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #e8f5e9;">✅</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-done">0</div>
+          <div class="stat-label">已完成</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fff9e6;">⏳</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-in-progress">0</div>
+          <div class="stat-label">進行中</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fce4ec;">📋</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-todo">0</div>
+          <div class="stat-label">待處理</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #ffebee;">⚠️</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-overdue">0</div>
+          <div class="stat-label">逾期任務</div>
+        </div>
+      </div>
     </div>
 
     <!-- 成員列表 -->
     <div class="section">
-      <h3>團隊成員 <button onclick="showAddMemberModal()" class="btn-small">+ 邀請</button></h3>
+      <h3>
+        團隊成員
+        <button onclick="showAddMemberModal()" class="btn-small" id="add-member-btn">
+          + 邀請
+        </button>
+      </h3>
       <div id="members-container" class="members-list"></div>
     </div>
 
     <!-- 任務列表 -->
     <div class="section">
       <h3>任務列表</h3>
-      <div class="task-filters">
-        <button onclick="filterTasks('all')" class="filter-btn active">全部</button>
-        <button onclick="filterTasks('todo')" class="filter-btn">待處理</button>
-        <button onclick="filterTasks('in_progress')" class="filter-btn">進行中</button>
-        <button onclick="filterTasks('done')" class="filter-btn">已完成</button>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div class="task-filters">
+          <button onclick="filterTasks('all')" class="filter-btn active" data-status="all">
+            全部
+          </button>
+          <button onclick="filterTasks('todo')" class="filter-btn" data-status="todo">
+            待處理
+          </button>
+          <button onclick="filterTasks('in_progress')" class="filter-btn" data-status="in_progress">
+            進行中
+          </button>
+          <button onclick="filterTasks('done')" class="filter-btn" data-status="done">
+            已完成
+          </button>
+        </div>
+        
+        <button onclick="showAddTaskModal()" class="btn-primary">+ 新增任務</button>
       </div>
+      
       <div id="tasks-container" class="tasks-list"></div>
     </div>
 
     <!-- 新增任務 Modal -->
     <div id="add-task-modal" class="modal hidden">
       <div class="modal-content">
-        <h3>新增任務</h3>
-        <input type="text" id="task-title" placeholder="任務標題" required>
-        <textarea id="task-description" placeholder="任務描述 (選填)" rows="3"></textarea>
-        <select id="task-assignee">
-          <option value="">不指派</option>
-        </select>
-        <select id="task-priority">
-          <option value="low">低優先級</option>
-          <option value="medium" selected>中優先級</option>
-          <option value="high">高優先級</option>
-        </select>
-        <input type="date" id="task-due-date">
-        <div class="modal-actions">
-          <button onclick="createTask()" class="btn-primary">建立</button>
-          <button onclick="hideTaskModal()" class="btn-secondary">取消</button>
-        </div>
+        <h3 id="task-modal-title">新增任務</h3>
+        <form id="task-form">
+          <input type="hidden" id="edit-task-id">
+          <input type="text" id="task-title" placeholder="任務標題" required>
+          <textarea id="task-description" placeholder="任務描述（選填）" rows="3"></textarea>
+          <select id="task-assignee">
+            <option value="">不指派</option>
+          </select>
+          <select id="task-priority">
+            <option value="low">低優先級</option>
+            <option value="medium" selected>中優先級</option>
+            <option value="high">高優先級</option>
+          </select>
+          <input type="date" id="task-due-date">
+          <div class="modal-actions">
+            <button type="submit" class="btn-primary" id="task-submit-btn">建立</button>
+            <button type="button" onclick="hideTaskModal()" class="btn-secondary">取消</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -69,78 +132,270 @@
     <div id="add-member-modal" class="modal hidden">
       <div class="modal-content">
         <h3>邀請成員</h3>
-        <input type="email" id="member-email" placeholder="成員 Email" required>
-        <select id="member-role">
-          <option value="member">一般成員</option>
-          <option value="admin">管理員</option>
-        </select>
-        <div class="modal-actions">
-          <button onclick="addMember()" class="btn-primary">邀請</button>
-          <button onclick="hideMemberModal()" class="btn-secondary">取消</button>
+        <form id="member-form">
+          <input type="email" id="member-email" placeholder="成員 Email" required>
+          <select id="member-role">
+            <option value="member">一般成員</option>
+            <option value="admin">管理員</option>
+          </select>
+          <div class="modal-actions">
+            <button type="submit" class="btn-primary">邀請</button>
+            <button type="button" onclick="hideMemberModal()" class="btn-secondary">取消</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 編輯專案 Modal -->
+    <div id="edit-project-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>編輯專案</h3>
+        <form id="edit-project-form">
+          <input type="text" id="edit-project-name" placeholder="專案名稱" required>
+          <textarea id="edit-project-description" placeholder="專案描述" rows="3"></textarea>
+          <div class="modal-actions">
+            <button type="submit" class="btn-primary">儲存</button>
+            <button type="button" onclick="hideEditProjectModal()" class="btn-secondary">
+              取消
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 任務詳情 Modal (含評論) -->
+    <div id="task-detail-modal" class="modal hidden">
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h3 id="detail-modal-title">任務詳情</h3>
+          <button class="modal-close" onclick="hideTaskDetailModal()">✕</button>
+        </div>
+        
+        <div class="task-detail-modal-body">
+          <!-- 任務資訊 -->
+          <div class="task-info-section">
+            <div class="info-row">
+              <label>狀態</label>
+              <select id="detail-task-status" onchange="updateTaskStatus()">
+                <option value="todo">待處理</option>
+                <option value="in_progress">進行中</option>
+                <option value="done">已完成</option>
+              </select>
+            </div>
+            
+            <div class="info-row">
+              <label>優先級</label>
+              <span id="detail-task-priority" class="priority-badge"></span>
+            </div>
+            
+            <div class="info-row">
+              <label>負責人</label>
+              <span id="detail-task-assignee">未指派</span>
+            </div>
+            
+            <div class="info-row">
+              <label>截止日期</label>
+              <span id="detail-task-due-date">未設定</span>
+            </div>
+            
+            <div class="info-row">
+              <label>描述</label>
+              <p id="detail-task-description">無描述</p>
+            </div>
+          </div>
+
+          <!-- 評論區塊 -->
+          <div class="comments-section">
+            <h4>評論 <span id="comments-count-badge">(0)</span></h4>
+            
+            <!-- 評論列表 -->
+            <div id="task-comments-list" class="task-comments-list">
+              <div class="loading-comments">載入評論中...</div>
+            </div>
+            
+            <!-- 新增評論 -->
+            <div class="add-comment-form">
+              <textarea 
+                id="new-comment-text" 
+                placeholder="新增評論..." 
+                rows="3"
+              ></textarea>
+              <button 
+                class="btn-primary" 
+                onclick="addTaskComment()"
+              >
+                發送評論
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- 引入 JS -->
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  
   <script>
-    // const API_URL = 'https://team-task-manager-lr5e.onrender.com';
-    const API_URL = 'http://127.0.0.1:8888';
-
-    let token = localStorage.getItem('token');
-    let user = JSON.parse(localStorage.getItem('user'));
-    let projectId = new URLSearchParams(window.location.search).get('id');
-    let currentFilter = 'all';
+    const user = Utils.getCurrentUser();
+    const projectId = Utils.getQueryParam('id');
+    
     let projectData = null;
-    let tasksData = [];
+    let allTasks = [];
+    let currentFilter = 'all';
+    let currentTaskId = null; // 當前查看的任務 ID
 
-    if (!token || !projectId) {
-      window.location.href = 'index.html';
+    if (!projectId) {
+      Utils.showError('無效的專案 ID');
+      setTimeout(() => window.location.href = 'dashboard.html', 2000);
     }
 
     // 載入專案資料
     async function loadProject() {
       try {
-        const response = await fetch(`${API_URL}/projects/${projectId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        Utils.showLoading('載入專案中...');
+        projectData = await ProjectAPI.get(projectId);
+        
+        displayProject(projectData);
+        displayMembers(projectData.members || []);
+        displayTasks(projectData.tasks || []);
+        updateProjectActions();
+        loadProjectStats(); // 載入統計
+        
+        allTasks = projectData.tasks || [];
+        
+      } catch (error) {
+        console.error('載入專案失敗:', error);
+        Utils.showError(error.message || '載入專案失敗');
+        setTimeout(() => window.location.href = 'dashboard.html', 2000);
+      } finally {
+        Utils.hideLoading();
+      }
+    }
+
+    // 載入專案統計
+    async function loadProjectStats() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/stats`, {
+          headers: Utils.getAuthHeaders()
         });
 
-        if (response.status === 401) {
-          logout();
-          return;
+        let stats;
+        if (!response.ok) {
+          // 如果 API 不存在,從本地任務計算統計
+          stats = calculateLocalStats(allTasks);
+        } else {
+          stats = await response.json();
         }
 
-        projectData = await response.json();
-        displayProject(projectData);
-        displayMembers(projectData.members);
-        displayTasks(projectData.tasks);
-        tasksData = projectData.tasks;
+        // 更新統計卡片
+        document.getElementById('stat-total').textContent = stats.total || 0;
+        document.getElementById('stat-done').textContent = stats.done || 0;
+        document.getElementById('stat-in-progress').textContent = stats.in_progress || 0;
+        document.getElementById('stat-todo').textContent = stats.todo || 0;
+        document.getElementById('stat-overdue').textContent = stats.overdue || 0;
+
       } catch (error) {
-        alert('載入專案失敗');
+        console.error('載入統計失敗:', error);
+        // 失敗時使用本地計算
+        const stats = calculateLocalStats(allTasks);
+        document.getElementById('stat-total').textContent = stats.total || 0;
+        document.getElementById('stat-done').textContent = stats.done || 0;
+        document.getElementById('stat-in-progress').textContent = stats.in_progress || 0;
+        document.getElementById('stat-todo').textContent = stats.todo || 0;
+        document.getElementById('stat-overdue').textContent = stats.overdue || 0;
       }
+    }
+
+    // 從本地任務計算統計
+    function calculateLocalStats(tasks) {
+      const now = new Date();
+      
+      return {
+        total: tasks.length,
+        done: tasks.filter(t => t.status === 'done').length,
+        in_progress: tasks.filter(t => t.status === 'in_progress').length,
+        todo: tasks.filter(t => t.status === 'todo').length,
+        overdue: tasks.filter(t => 
+          t.due_date && 
+          new Date(t.due_date) < now && 
+          t.status !== 'done'
+        ).length
+      };
     }
 
     // 顯示專案資訊
     function displayProject(project) {
       document.getElementById('project-name').textContent = project.name;
-      document.getElementById('project-description').textContent = project.description || '沒有描述';
+      document.getElementById('project-description').textContent = 
+        project.description || '沒有描述';
+    }
+
+    // 更新專案操作按鈕（編輯/刪除）
+    function updateProjectActions() {
+      const actionsContainer = document.getElementById('project-actions');
+      
+      // 只有 owner 和 admin 能編輯
+      const canEdit = projectData.owner_id === user.id || 
+                     projectData.my_role === 'admin';
+      
+      // 只有 owner 能刪除
+      const canDelete = projectData.owner_id === user.id;
+
+      let html = '';
+      
+      if (canEdit) {
+        html += `
+          <button onclick="showEditProjectModal()" class="btn-secondary">
+            ✏️ 編輯
+          </button>
+        `;
+      }
+      
+      if (canDelete) {
+        html += `
+          <button onclick="deleteProject()" class="btn-secondary" 
+                  style="color: #ff4444;">
+            🗑️ 刪除
+          </button>
+        `;
+      }
+      
+      actionsContainer.innerHTML = html;
     }
 
     // 顯示成員
     function displayMembers(members) {
       const container = document.getElementById('members-container');
-      container.innerHTML = members.map(member => `
-        <div class="member-item">
-          <span>${member.username} (${member.email})</span>
-          <span class="badge ${member.role === 'admin' ? 'badge-admin' : 'badge-member'}">
-            ${member.role === 'admin' ? '管理員' : '成員'}
-          </span>
-        </div>
-      `).join('');
+      
+      if (members.length === 0) {
+        container.innerHTML = '<p class="text-muted">還沒有成員</p>';
+        return;
+      }
+
+      container.innerHTML = members.map(member => {
+        const roleText = member.role === 'admin' ? '管理員' : '成員';
+        const roleClass = member.role === 'admin' ? 'badge-admin' : 'badge-member';
+        
+        return `
+          <div class="member-item">
+            <span>
+              ${Utils.escapeHtml(member.username)} 
+              (${Utils.escapeHtml(member.email)})
+            </span>
+            <span class="badge ${roleClass}">${roleText}</span>
+          </div>
+        `;
+      }).join('');
 
       // 更新任務指派下拉選單
       const assigneeSelect = document.getElementById('task-assignee');
       assigneeSelect.innerHTML = '<option value="">不指派</option>' + 
-        members.map(m => `<option value="${m.id}">${m.username}</option>`).join('');
+        members.map(m => 
+          `<option value="${m.id}">${Utils.escapeHtml(m.username)}</option>`
+        ).join('');
     }
 
     // 顯示任務
@@ -148,28 +403,65 @@
       const container = document.getElementById('tasks-container');
       
       if (tasks.length === 0) {
-        container.innerHTML = '<p class="empty-state">還沒有任務</p>';
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-text">還沒有任務</div>
+          </div>
+        `;
         return;
       }
 
-      container.innerHTML = tasks.map(task => `
-        <div class="task-item ${task.status}">
+      container.innerHTML = tasks.map(task => createTaskHTML(task)).join('');
+    }
+
+    // 建立單個任務 HTML
+    function createTaskHTML(task) {
+      return `
+        <div class="task-item ${task.status}" data-task-id="${task.id}" onclick="showTaskDetail(${task.id})">
           <div class="task-header">
-            <h4>${task.title}</h4>
-            <select onchange="updateTaskStatus(${task.id}, this.value)" class="status-select">
-              <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>待處理</option>
-              <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>進行中</option>
-              <option value="done" ${task.status === 'done' ? 'selected' : ''}>已完成</option>
-            </select>
+            <h4>${Utils.escapeHtml(task.title)}</h4>
+            <div class="task-actions" onclick="event.stopPropagation()">
+              <select onchange="updateTaskStatusQuick(${task.id}, this.value)" 
+                      class="status-select">
+                <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>
+                  待處理
+                </option>
+                <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>
+                  進行中
+                </option>
+                <option value="done" ${task.status === 'done' ? 'selected' : ''}>
+                  已完成
+                </option>
+              </select>
+              <button class="btn-icon" onclick="event.stopPropagation(); editTask(${task.id})" title="編輯">
+                ✏️
+              </button>
+              <button class="btn-icon delete" onclick="event.stopPropagation(); deleteTask(${task.id})" title="刪除">
+                🗑️
+              </button>
+            </div>
           </div>
-          <p class="task-desc">${task.description || '沒有描述'}</p>
+          
+          ${task.description ? `
+            <p class="task-desc">${Utils.escapeHtml(task.description)}</p>
+          ` : ''}
+          
           <div class="task-meta">
-            <span class="badge badge-${task.priority}">${getPriorityText(task.priority)}</span>
-            ${task.assigned_to ? `<span>👤 ${task.assigned_to.username}</span>` : '<span>未指派</span>'}
-            ${task.due_date ? `<span>📅 ${formatDate(task.due_date)}</span>` : ''}
+            <span class="badge ${Utils.getPriorityClass(task.priority)}">
+              ${Utils.getTaskPriorityText(task.priority)}
+            </span>
+            
+            ${task.assigned_to ? `
+              <span>👤 ${Utils.escapeHtml(task.assigned_to.username)}</span>
+            ` : '<span>未指派</span>'}
+            
+            ${task.due_date ? `
+              <span>📅 ${Utils.formatDate(task.due_date)}</span>
+            ` : ''}
           </div>
         </div>
-      `).join('');
+      `;
     }
 
     // 篩選任務
@@ -179,13 +471,15 @@
       // 更新按鈕樣式
       document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
+        if (btn.dataset.status === status) {
+          btn.classList.add('active');
+        }
       });
-      event.target.classList.add('active');
 
       // 篩選並顯示
       const filtered = status === 'all' 
-        ? tasksData 
-        : tasksData.filter(t => t.status === status);
+        ? allTasks 
+        : allTasks.filter(t => t.status === status);
       
       displayTasks(filtered);
     }
@@ -193,133 +487,439 @@
     // 更新任務狀態
     async function updateTaskStatus(taskId, newStatus) {
       try {
-        const response = await fetch(`${API_URL}/tasks/${taskId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ status: newStatus })
-        });
-
-        if (response.ok) {
-          loadProject(); // 重新載入
+        await TaskAPI.update(taskId, { status: newStatus });
+        
+        // 更新本地資料
+        const task = allTasks.find(t => t.id === taskId);
+        if (task) {
+          task.status = newStatus;
+          filterTasks(currentFilter);
         }
+        
+        Utils.showSuccess('任務狀態已更新');
+        
       } catch (error) {
-        alert('更新失敗');
+        console.error('更新狀態失敗:', error);
+        Utils.showError(error.message || '更新狀態失敗');
+        loadProject();
       }
     }
 
     // 顯示新增任務 Modal
     function showAddTaskModal() {
+      document.getElementById('task-modal-title').textContent = '新增任務';
+      document.getElementById('task-submit-btn').textContent = '建立';
+      document.getElementById('edit-task-id').value = '';
+      document.getElementById('task-form').reset();
       document.getElementById('add-task-modal').classList.remove('hidden');
+      document.getElementById('task-title').focus();
     }
 
+    // 隱藏任務 Modal
     function hideTaskModal() {
       document.getElementById('add-task-modal').classList.add('hidden');
+      document.getElementById('task-form').reset();
     }
 
-    // 建立任務
-    async function createTask() {
-      const title = document.getElementById('task-title').value;
-      const description = document.getElementById('task-description').value;
-      const assigned_to = document.getElementById('task-assignee').value;
+    // 建立/更新任務
+    document.getElementById('task-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const taskId = document.getElementById('edit-task-id').value;
+      const title = document.getElementById('task-title').value.trim();
+      const description = document.getElementById('task-description').value.trim();
+      const assignedTo = document.getElementById('task-assignee').value;
       const priority = document.getElementById('task-priority').value;
-      const due_date = document.getElementById('task-due-date').value;
+      const dueDate = document.getElementById('task-due-date').value;
 
-      if (!title.trim()) {
-        alert('請輸入任務標題');
+      if (!title) {
+        Utils.showError('請輸入任務標題');
         return;
       }
 
-      const body = { title, description, priority };
-      if (assigned_to) body.assigned_to = parseInt(assigned_to);
-      if (due_date) body.due_date = due_date;
+      const taskData = { 
+        title, 
+        description, 
+        priority 
+      };
+      
+      if (assignedTo) taskData.assigned_to = parseInt(assignedTo);
+      if (dueDate) taskData.due_date = dueDate;
 
       try {
-        const response = await fetch(`${API_URL}/projects/${projectId}/tasks`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(body)
-        });
-
-        if (response.ok) {
-          hideTaskModal();
-          loadProject();
+        Utils.showLoading(taskId ? '更新中...' : '建立中...');
+        
+        if (taskId) {
+          // 更新任務
+          await TaskAPI.update(taskId, taskData);
+          Utils.showSuccess('任務已更新');
         } else {
-          const data = await response.json();
-          alert(data.error || '建立失敗');
+          // 建立任務
+          await TaskAPI.create(projectId, taskData);
+          Utils.showSuccess('任務已建立');
         }
+        
+        hideTaskModal();
+        loadProject();
+        
       } catch (error) {
-        alert('網路錯誤');
+        console.error('操作失敗:', error);
+        Utils.showError(error.message || '操作失敗');
+      } finally {
+        Utils.hideLoading();
       }
+    });
+
+    // 編輯任務
+    function editTask(taskId) {
+      const task = allTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      document.getElementById('task-modal-title').textContent = '編輯任務';
+      document.getElementById('task-submit-btn').textContent = '更新';
+      document.getElementById('edit-task-id').value = taskId;
+      document.getElementById('task-title').value = task.title;
+      document.getElementById('task-description').value = task.description || '';
+      document.getElementById('task-assignee').value = task.assigned_to?.id || '';
+      document.getElementById('task-priority').value = task.priority;
+      document.getElementById('task-due-date').value = task.due_date || '';
+      
+      document.getElementById('add-task-modal').classList.remove('hidden');
+      document.getElementById('task-title').focus();
+    }
+
+    // 刪除任務
+    function deleteTask(taskId) {
+      Utils.confirm('確定要刪除這個任務嗎？', async () => {
+        try {
+          Utils.showLoading('刪除中...');
+          await TaskAPI.delete(taskId);
+          
+          Utils.showSuccess('任務已刪除');
+          loadProject();
+          
+        } catch (error) {
+          console.error('刪除失敗:', error);
+          Utils.showError(error.message || '刪除失敗');
+        } finally {
+          Utils.hideLoading();
+        }
+      });
     }
 
     // 顯示邀請成員 Modal
     function showAddMemberModal() {
       document.getElementById('add-member-modal').classList.remove('hidden');
+      document.getElementById('member-email').focus();
     }
 
+    // 隱藏成員 Modal
     function hideMemberModal() {
       document.getElementById('add-member-modal').classList.add('hidden');
+      document.getElementById('member-form').reset();
     }
 
     // 邀請成員
-    async function addMember() {
-      const email = document.getElementById('member-email').value;
+    document.getElementById('member-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('member-email').value.trim();
       const role = document.getElementById('member-role').value;
 
       if (!email) {
-        alert('請輸入 Email');
+        Utils.showError('請輸入 Email');
+        return;
+      }
+
+      if (!Utils.isValidEmail(email)) {
+        Utils.showError('Email 格式不正確');
         return;
       }
 
       try {
-        const response = await fetch(`${API_URL}/projects/${projectId}/members`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ user_email: email, role })
+        Utils.showLoading('邀請中...');
+        await ProjectAPI.addMember(projectId, { 
+          user_email: email, 
+          role 
         });
-
-        if (response.ok) {
-          hideMemberModal();
-          loadProject();
-        } else {
-          const data = await response.json();
-          alert(data.error || '邀請失敗');
-        }
+        
+        Utils.showSuccess('成員已邀請');
+        hideMemberModal();
+        loadProject();
+        
       } catch (error) {
-        alert('網路錯誤');
+        console.error('邀請失敗:', error);
+        Utils.showError(error.message || '邀請失敗');
+      } finally {
+        Utils.hideLoading();
       }
+    });
+
+    // 顯示編輯專案 Modal
+    function showEditProjectModal() {
+      document.getElementById('edit-project-name').value = projectData.name;
+      document.getElementById('edit-project-description').value = projectData.description || '';
+      document.getElementById('edit-project-modal').classList.remove('hidden');
+      document.getElementById('edit-project-name').focus();
     }
 
-    // 輔助函數
-    function getPriorityText(priority) {
-      const map = { low: '低', medium: '中', high: '高' };
-      return map[priority] || priority;
+    // 隱藏編輯專案 Modal
+    function hideEditProjectModal() {
+      document.getElementById('edit-project-modal').classList.add('hidden');
+      document.getElementById('edit-project-form').reset();
     }
 
-    function formatDate(dateStr) {
-      return new Date(dateStr).toLocaleDateString('zh-TW');
+    // 更新專案
+    document.getElementById('edit-project-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('edit-project-name').value.trim();
+      const description = document.getElementById('edit-project-description').value.trim();
+
+      if (!name) {
+        Utils.showError('請輸入專案名稱');
+        return;
+      }
+
+      try {
+        Utils.showLoading('更新中...');
+        await ProjectAPI.update(projectId, { name, description });
+        
+        Utils.showSuccess('專案已更新');
+        hideEditProjectModal();
+        loadProject();
+        
+      } catch (error) {
+        console.error('更新失敗:', error);
+        Utils.showError(error.message || '更新失敗');
+      } finally {
+        Utils.hideLoading();
+      }
+    });
+
+    // 刪除專案
+    function deleteProject() {
+      Utils.confirm(
+        '確定要刪除這個專案嗎？這個操作無法復原，所有相關的任務也會被刪除。',
+        async () => {
+          try {
+            Utils.showLoading('刪除中...');
+            await ProjectAPI.delete(projectId);
+            
+            Utils.showSuccess('專案已刪除');
+            setTimeout(() => {
+              window.location.href = 'dashboard.html';
+            }, 1500);
+            
+          } catch (error) {
+            console.error('刪除失敗:', error);
+            Utils.showError(error.message || '刪除失敗');
+            Utils.hideLoading();
+          }
+        }
+      );
     }
 
+    // 返回
     function goBack() {
       window.location.href = 'dashboard.html';
     }
 
-    function logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = 'index.html';
+    // ========== 任務詳情和評論功能 ==========
+    
+    // 顯示任務詳情 Modal
+    async function showTaskDetail(taskId) {
+      currentTaskId = taskId;
+      const task = allTasks.find(t => t.id === taskId);
+      
+      if (!task) {
+        Utils.showError('找不到任務');
+        return;
+      }
+
+      // 填入任務資訊
+      document.getElementById('detail-modal-title').textContent = task.title;
+      document.getElementById('detail-task-status').value = task.status;
+      document.getElementById('detail-task-priority').textContent = 
+        Utils.getTaskPriorityText(task.priority);
+      document.getElementById('detail-task-assignee').textContent = 
+        task.assigned_to ? task.assigned_to.username : '未指派';
+      document.getElementById('detail-task-due-date').textContent = 
+        task.due_date ? Utils.formatDate(task.due_date) : '未設定';
+      document.getElementById('detail-task-description').textContent = 
+        task.description || '無描述';
+
+      // 顯示 Modal
+      document.getElementById('task-detail-modal').classList.remove('hidden');
+
+      // 載入評論
+      await loadTaskComments(taskId);
     }
 
-    // 頁面載入
+    // 隱藏任務詳情 Modal
+    function hideTaskDetailModal() {
+      document.getElementById('task-detail-modal').classList.add('hidden');
+      currentTaskId = null;
+    }
+
+    // 更新任務狀態 (從詳情 Modal)
+    async function updateTaskStatus() {
+      if (!currentTaskId) return;
+
+      const newStatus = document.getElementById('detail-task-status').value;
+
+      try {
+        await TaskAPI.update(currentTaskId, { status: newStatus });
+        Utils.showSuccess('狀態已更新');
+        
+        // 更新本地資料
+        const task = allTasks.find(t => t.id === currentTaskId);
+        if (task) {
+          task.status = newStatus;
+        }
+        
+        // 重新顯示任務列表
+        filterTasks(currentFilter);
+        
+      } catch (error) {
+        console.error('更新狀態失敗:', error);
+        Utils.showError('更新狀態失敗');
+      }
+    }
+
+    // 快速更新任務狀態 (從任務卡片)
+    async function updateTaskStatusQuick(taskId, newStatus) {
+      try {
+        await TaskAPI.update(taskId, { status: newStatus });
+        Utils.showSuccess('狀態已更新');
+        
+        // 更新本地資料
+        const task = allTasks.find(t => t.id === taskId);
+        if (task) {
+          task.status = newStatus;
+        }
+        
+        // 重新顯示任務列表
+        filterTasks(currentFilter);
+        
+      } catch (error) {
+        console.error('更新狀態失敗:', error);
+        Utils.showError('更新狀態失敗');
+      }
+    }
+
+    // 載入任務評論
+    async function loadTaskComments(taskId) {
+      const commentsList = document.getElementById('task-comments-list');
+      
+      try {
+        commentsList.innerHTML = '<div class="loading-comments">載入評論中...</div>';
+        
+        const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/comments`, {
+          headers: Utils.getAuthHeaders()
+        });
+
+        if (!response.ok) {
+          // 如果 API 不存在,顯示空狀態
+          commentsList.innerHTML = '<div class="empty-comments">暫無評論</div>';
+          document.getElementById('comments-count-badge').textContent = '(0)';
+          return;
+        }
+
+        const comments = await response.json();
+        
+        // 更新評論數量
+        document.getElementById('comments-count-badge').textContent = `(${comments.length})`;
+        
+        if (comments.length === 0) {
+          commentsList.innerHTML = '<div class="empty-comments">暫無評論，成為第一個留言的人！</div>';
+          return;
+        }
+
+        // 顯示評論
+        commentsList.innerHTML = comments.map(comment => `
+          <div class="comment-item">
+            <div class="comment-header">
+              <div class="comment-avatar">${comment.user.username.charAt(0).toUpperCase()}</div>
+              <div class="comment-meta">
+                <span class="comment-author">${Utils.escapeHtml(comment.user.username)}</span>
+                <span class="comment-time">${Utils.formatRelativeTime(comment.created_at)}</span>
+              </div>
+            </div>
+            <div class="comment-body">${Utils.escapeHtml(comment.content)}</div>
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('載入評論失敗:', error);
+        commentsList.innerHTML = '<div class="error-comments">載入評論失敗</div>';
+      }
+    }
+
+    // 新增評論
+    async function addTaskComment() {
+      if (!currentTaskId) return;
+
+      const textarea = document.getElementById('new-comment-text');
+      const content = textarea.value.trim();
+
+      if (!content) {
+        Utils.showError('請輸入評論內容');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/tasks/${currentTaskId}/comments`, {
+          method: 'POST',
+          headers: Utils.getAuthHeaders(),
+          body: JSON.stringify({ content })
+        });
+
+        if (!response.ok) {
+          throw new Error('新增評論失敗');
+        }
+
+        Utils.showSuccess('評論已發送');
+        textarea.value = '';
+        
+        // 重新載入評論
+        await loadTaskComments(currentTaskId);
+
+      } catch (error) {
+        console.error('新增評論失敗:', error);
+        Utils.showError('新增評論失敗');
+      }
+    }
+
+    // 登出
+    function logout() {
+      Utils.confirm('確定要登出嗎？', () => {
+        api.clearAuth();
+        window.location.href = 'index.html';
+      });
+    }
+
+    // 點擊 Modal 背景關閉
+    ['add-task-modal', 'add-member-modal', 'edit-project-modal', 'task-detail-modal'].forEach(modalId => {
+      const modal = document.getElementById(modalId);
+      modal.addEventListener('click', (e) => {
+        if (e.target.id === modalId) {
+          modal.classList.add('hidden');
+        }
+      });
+    });
+
+    // ESC 鍵關閉 Modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        hideTaskModal();
+        hideMemberModal();
+        hideEditProjectModal();
+        hideTaskDetailModal();
+      }
+    });
+
+    // 頁面載入時執行
     loadProject();
   </script>
 </body>
